@@ -125,6 +125,13 @@ export const translations = {
     totalFlats: "کل آپارتمان‌ها",
     available_units: "واحدهای موجود",
     viewFlats: "مشاهده آپارتمان‌ها",
+    flatTypes: "انواع آپارتمان",
+    flatType: "نوع آپارتمان",
+    addFlatType: "افزودن نوع آپارتمان",
+    typeName: "نام نوع (مثلاً ۳ خوابه)",
+    count: "تعداد",
+    remove: "حذف",
+    noFlatTypes: "برای این طبقه نوعی تعریف نشده است",
   },
   en: {
     appName: "Construction & Real Estate",
