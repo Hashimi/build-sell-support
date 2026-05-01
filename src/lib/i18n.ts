@@ -125,6 +125,13 @@ export const translations = {
     totalFlats: "کل آپارتمان‌ها",
     available_units: "واحدهای موجود",
     viewFlats: "مشاهده آپارتمان‌ها",
+    flatTypes: "انواع آپارتمان",
+    flatType: "نوع آپارتمان",
+    addFlatType: "افزودن نوع آپارتمان",
+    typeName: "نام نوع (مثلاً ۳ خوابه)",
+    count: "تعداد",
+    remove: "حذف",
+    noFlatTypes: "برای این طبقه نوعی تعریف نشده است",
   },
   en: {
     appName: "Construction & Real Estate",
@@ -247,6 +254,13 @@ export const translations = {
     totalFlats: "Total Flats",
     available_units: "Available Units",
     viewFlats: "View Flats",
+    flatTypes: "Flat Types",
+    flatType: "Flat Type",
+    addFlatType: "Add Flat Type",
+    typeName: "Type Name (e.g. 3-Bedroom)",
+    count: "Count",
+    remove: "Remove",
+    noFlatTypes: "No flat types defined for this floor",
   },
 } as const;
 
