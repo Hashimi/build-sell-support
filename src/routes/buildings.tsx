@@ -144,26 +144,31 @@ function BuildingsPage() {
       };
       newFloors.push(fl);
       if (f.purpose === "residential" || f.purpose === "mixed" || f.purpose === "commercial") {
-        for (let i = 1; i <= f.flatsCount; i++) {
-          newFlats.push({
-            id: uid(),
-            createdAt: now,
-            updatedAt: now,
-            buildingId: building.id,
-            floorId: fl.id,
-            block: name,
-            floor: f.floorNumber,
-            apartmentNo: `${f.floorNumber}${String(i).padStart(2, "0")}`,
-            rooms: f.bedrooms,
-            bathrooms: f.bathrooms,
-            kitchens: f.kitchens,
-            livingRooms: f.livingRooms,
-            area: f.area,
-            price: f.price,
-            status: "available",
-            purpose: f.purpose,
-          });
-        }
+        let seq = 1;
+        f.types.forEach((tp) => {
+          for (let i = 0; i < tp.count; i++) {
+            newFlats.push({
+              id: uid(),
+              createdAt: now,
+              updatedAt: now,
+              buildingId: building.id,
+              floorId: fl.id,
+              block: name,
+              floor: f.floorNumber,
+              apartmentNo: `${f.floorNumber}${String(seq).padStart(2, "0")}`,
+              rooms: tp.bedrooms,
+              bathrooms: tp.bathrooms,
+              kitchens: tp.kitchens,
+              livingRooms: tp.livingRooms,
+              area: tp.area,
+              price: tp.price,
+              status: "available",
+              purpose: f.purpose,
+              notes: tp.name,
+            });
+            seq++;
+          }
+        });
       }
     });
     // Bulk write via repo.add loop would emit many events; do direct writes
