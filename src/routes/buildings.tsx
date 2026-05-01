@@ -123,6 +123,30 @@ function BuildingsPage() {
     setDraft((d) => d.map((f, i) => (i === idx ? { ...f, ...patch } : f)));
   };
 
+  const updateType = (fIdx: number, tIdx: number, patch: Partial<FlatTypeDraft>) => {
+    setDraft((d) =>
+      d.map((f, i) =>
+        i === fIdx
+          ? { ...f, types: f.types.map((t, j) => (j === tIdx ? { ...t, ...patch } : t)) }
+          : f,
+      ),
+    );
+  };
+
+  const addType = (fIdx: number) => {
+    setDraft((d) =>
+      d.map((f, i) => (i === fIdx ? { ...f, types: [...f.types, defaultType("New Type")] } : f)),
+    );
+  };
+
+  const removeType = (fIdx: number, tIdx: number) => {
+    setDraft((d) =>
+      d.map((f, i) =>
+        i === fIdx ? { ...f, types: f.types.filter((_, j) => j !== tIdx) } : f,
+      ),
+    );
+  };
+
   const create = () => {
     const building = repo.add("buildings", {
       name,
