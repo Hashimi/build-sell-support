@@ -254,6 +254,13 @@ export const translations = {
     totalFlats: "Total Flats",
     available_units: "Available Units",
     viewFlats: "View Flats",
+    flatTypes: "Flat Types",
+    flatType: "Flat Type",
+    addFlatType: "Add Flat Type",
+    typeName: "Type Name (e.g. 3-Bedroom)",
+    count: "Count",
+    remove: "Remove",
+    noFlatTypes: "No flat types defined for this floor",
   },
 } as const;
 
