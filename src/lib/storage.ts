@@ -45,14 +45,36 @@ export interface Expense extends Entity {
   project?: string;
 }
 
+export type FloorPurpose = "residential" | "parking" | "commercial" | "storage" | "amenity" | "mixed";
+
+export interface Building extends Entity {
+  name: string;
+  address?: string;
+  floorsCount: number;
+  notes?: string;
+}
+
+export interface Floor extends Entity {
+  buildingId: string;
+  floorNumber: number;
+  purpose: FloorPurpose;
+  notes?: string;
+}
+
 export interface Apartment extends Entity {
+  buildingId?: string;
+  floorId?: string;
   block: string;
   floor: number;
   apartmentNo: string;
-  rooms: number;
+  rooms: number; // bedrooms
+  bathrooms?: number;
+  kitchens?: number;
+  livingRooms?: number;
   area: number;
   price: number;
   status: "available" | "sold" | "reserved";
+  purpose?: FloorPurpose;
   notes?: string;
 }
 
@@ -87,6 +109,8 @@ type StoreMap = {
   workers: Worker;
   salaries: Salary;
   expenses: Expense;
+  buildings: Building;
+  floors: Floor;
   apartments: Apartment;
   clients: Client;
   sales: Sale;
