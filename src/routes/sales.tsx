@@ -74,7 +74,15 @@ function SalesPage() {
             setForm({ ...form, apartmentId: v, salePrice: form.salePrice || (a?.price ?? 0) });
           }}>
             <SelectTrigger><SelectValue placeholder={t("selectApartment")} /></SelectTrigger>
-            <SelectContent>{apartments.map((a) => <SelectItem key={a.id} value={a.id}>{a.block}-{a.apartmentNo} ({t(a.status)})</SelectItem>)}</SelectContent>
+            <SelectContent>
+              {apartments
+                .filter((a) => editing?.apartmentId === a.id || a.status === "available")
+                .map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.block} · {t("floor")} {a.floor} · #{a.apartmentNo} ({t(a.status)})
+                  </SelectItem>
+                ))}
+            </SelectContent>
           </Select>
         </F>
         <div className="grid grid-cols-2 gap-3">

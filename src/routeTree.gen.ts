@@ -16,6 +16,7 @@ import { Route as RequestsRouteImport } from './routes/requests'
 import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as ExpensesRouteImport } from './routes/expenses'
 import { Route as ClientsRouteImport } from './routes/clients'
+import { Route as BuildingsRouteImport } from './routes/buildings'
 import { Route as ApartmentsRouteImport } from './routes/apartments'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -54,6 +55,11 @@ const ClientsRoute = ClientsRouteImport.update({
   path: '/clients',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BuildingsRoute = BuildingsRouteImport.update({
+  id: '/buildings',
+  path: '/buildings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApartmentsRoute = ApartmentsRouteImport.update({
   id: '/apartments',
   path: '/apartments',
@@ -68,6 +74,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/apartments': typeof ApartmentsRoute
+  '/buildings': typeof BuildingsRoute
   '/clients': typeof ClientsRoute
   '/expenses': typeof ExpensesRoute
   '/materials': typeof MaterialsRoute
@@ -79,6 +86,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/apartments': typeof ApartmentsRoute
+  '/buildings': typeof BuildingsRoute
   '/clients': typeof ClientsRoute
   '/expenses': typeof ExpensesRoute
   '/materials': typeof MaterialsRoute
@@ -91,6 +99,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/apartments': typeof ApartmentsRoute
+  '/buildings': typeof BuildingsRoute
   '/clients': typeof ClientsRoute
   '/expenses': typeof ExpensesRoute
   '/materials': typeof MaterialsRoute
@@ -104,6 +113,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/apartments'
+    | '/buildings'
     | '/clients'
     | '/expenses'
     | '/materials'
@@ -115,6 +125,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/apartments'
+    | '/buildings'
     | '/clients'
     | '/expenses'
     | '/materials'
@@ -126,6 +137,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/apartments'
+    | '/buildings'
     | '/clients'
     | '/expenses'
     | '/materials'
@@ -138,6 +150,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApartmentsRoute: typeof ApartmentsRoute
+  BuildingsRoute: typeof BuildingsRoute
   ClientsRoute: typeof ClientsRoute
   ExpensesRoute: typeof ExpensesRoute
   MaterialsRoute: typeof MaterialsRoute
@@ -198,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ClientsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/buildings': {
+      id: '/buildings'
+      path: '/buildings'
+      fullPath: '/buildings'
+      preLoaderRoute: typeof BuildingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/apartments': {
       id: '/apartments'
       path: '/apartments'
@@ -218,6 +238,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApartmentsRoute: ApartmentsRoute,
+  BuildingsRoute: BuildingsRoute,
   ClientsRoute: ClientsRoute,
   ExpensesRoute: ExpensesRoute,
   MaterialsRoute: MaterialsRoute,
