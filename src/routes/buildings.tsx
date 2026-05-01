@@ -287,64 +287,104 @@ function BuildingsPage() {
                         </SelectContent>
                       </Select>
                     </F>
-                    <F label={t("flatsPerFloor")}>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={f.flatsCount}
-                        onChange={(e) => updateFloor(idx, { flatsCount: +e.target.value })}
-                      />
-                    </F>
+                    <div className="flex items-end justify-end">
+                      <span className="text-xs text-muted-foreground">
+                        {f.types.reduce((s, x) => s + x.count, 0)} {t("flats")}
+                      </span>
+                    </div>
                   </div>
-                  {f.flatsCount > 0 && (
-                    <>
-                      <div className="grid grid-cols-4 gap-2">
-                        <F label={t("bedrooms")}>
-                          <Input
-                            type="number"
-                            value={f.bedrooms}
-                            onChange={(e) => updateFloor(idx, { bedrooms: +e.target.value })}
-                          />
-                        </F>
-                        <F label={t("bathrooms")}>
-                          <Input
-                            type="number"
-                            value={f.bathrooms}
-                            onChange={(e) => updateFloor(idx, { bathrooms: +e.target.value })}
-                          />
-                        </F>
-                        <F label={t("kitchens")}>
-                          <Input
-                            type="number"
-                            value={f.kitchens}
-                            onChange={(e) => updateFloor(idx, { kitchens: +e.target.value })}
-                          />
-                        </F>
-                        <F label={t("livingRooms")}>
-                          <Input
-                            type="number"
-                            value={f.livingRooms}
-                            onChange={(e) => updateFloor(idx, { livingRooms: +e.target.value })}
-                          />
-                        </F>
+                  {(f.purpose === "residential" || f.purpose === "mixed" || f.purpose === "commercial") && (
+                    <div className="space-y-2 rounded-md border bg-muted/30 p-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-semibold">{t("flatTypes")}</span>
+                        <Button type="button" size="sm" variant="outline" onClick={() => addType(idx)}>
+                          + {t("addFlatType")}
+                        </Button>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <F label={t("defaultArea")}>
-                          <Input
-                            type="number"
-                            value={f.area}
-                            onChange={(e) => updateFloor(idx, { area: +e.target.value })}
-                          />
-                        </F>
-                        <F label={t("defaultPrice")}>
-                          <Input
-                            type="number"
-                            value={f.price}
-                            onChange={(e) => updateFloor(idx, { price: +e.target.value })}
-                          />
-                        </F>
-                      </div>
-                    </>
+                      {f.types.length === 0 ? (
+                        <p className="text-xs text-muted-foreground py-2 text-center">
+                          {t("noFlatTypes")}
+                        </p>
+                      ) : (
+                        f.types.map((tp, tIdx) => (
+                          <div key={tIdx} className="rounded-md border bg-background p-2 space-y-2">
+                            <div className="grid grid-cols-3 gap-2">
+                              <F label={t("typeName")}>
+                                <Input
+                                  value={tp.name}
+                                  onChange={(e) => updateType(idx, tIdx, { name: e.target.value })}
+                                />
+                              </F>
+                              <F label={t("count")}>
+                                <Input
+                                  type="number"
+                                  min={0}
+                                  value={tp.count}
+                                  onChange={(e) => updateType(idx, tIdx, { count: +e.target.value })}
+                                />
+                              </F>
+                              <div className="flex items-end justify-end">
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  variant="ghost"
+                                  className="text-destructive"
+                                  onClick={() => removeType(idx, tIdx)}
+                                >
+                                  {t("remove")}
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                              <F label={t("bedrooms")}>
+                                <Input
+                                  type="number"
+                                  value={tp.bedrooms}
+                                  onChange={(e) => updateType(idx, tIdx, { bedrooms: +e.target.value })}
+                                />
+                              </F>
+                              <F label={t("bathrooms")}>
+                                <Input
+                                  type="number"
+                                  value={tp.bathrooms}
+                                  onChange={(e) => updateType(idx, tIdx, { bathrooms: +e.target.value })}
+                                />
+                              </F>
+                              <F label={t("kitchens")}>
+                                <Input
+                                  type="number"
+                                  value={tp.kitchens}
+                                  onChange={(e) => updateType(idx, tIdx, { kitchens: +e.target.value })}
+                                />
+                              </F>
+                              <F label={t("livingRooms")}>
+                                <Input
+                                  type="number"
+                                  value={tp.livingRooms}
+                                  onChange={(e) => updateType(idx, tIdx, { livingRooms: +e.target.value })}
+                                />
+                              </F>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <F label={t("area")}>
+                                <Input
+                                  type="number"
+                                  value={tp.area}
+                                  onChange={(e) => updateType(idx, tIdx, { area: +e.target.value })}
+                                />
+                              </F>
+                              <F label={t("price")}>
+                                <Input
+                                  type="number"
+                                  value={tp.price}
+                                  onChange={(e) => updateType(idx, tIdx, { price: +e.target.value })}
+                                />
+                              </F>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
                   )}
                 </CardContent>
               </Card>
