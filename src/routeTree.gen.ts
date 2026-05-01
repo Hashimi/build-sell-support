@@ -9,8 +9,56 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as WorkersRouteImport } from './routes/workers'
+import { Route as SalesRouteImport } from './routes/sales'
+import { Route as SalariesRouteImport } from './routes/salaries'
+import { Route as RequestsRouteImport } from './routes/requests'
+import { Route as MaterialsRouteImport } from './routes/materials'
+import { Route as ExpensesRouteImport } from './routes/expenses'
+import { Route as ClientsRouteImport } from './routes/clients'
+import { Route as ApartmentsRouteImport } from './routes/apartments'
 import { Route as IndexRouteImport } from './routes/index'
 
+const WorkersRoute = WorkersRouteImport.update({
+  id: '/workers',
+  path: '/workers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalesRoute = SalesRouteImport.update({
+  id: '/sales',
+  path: '/sales',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalariesRoute = SalariesRouteImport.update({
+  id: '/salaries',
+  path: '/salaries',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RequestsRoute = RequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MaterialsRoute = MaterialsRouteImport.update({
+  id: '/materials',
+  path: '/materials',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExpensesRoute = ExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClientsRoute = ClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApartmentsRoute = ApartmentsRouteImport.update({
+  id: '/apartments',
+  path: '/apartments',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +67,144 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/apartments': typeof ApartmentsRoute
+  '/clients': typeof ClientsRoute
+  '/expenses': typeof ExpensesRoute
+  '/materials': typeof MaterialsRoute
+  '/requests': typeof RequestsRoute
+  '/salaries': typeof SalariesRoute
+  '/sales': typeof SalesRoute
+  '/workers': typeof WorkersRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/apartments': typeof ApartmentsRoute
+  '/clients': typeof ClientsRoute
+  '/expenses': typeof ExpensesRoute
+  '/materials': typeof MaterialsRoute
+  '/requests': typeof RequestsRoute
+  '/salaries': typeof SalariesRoute
+  '/sales': typeof SalesRoute
+  '/workers': typeof WorkersRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/apartments': typeof ApartmentsRoute
+  '/clients': typeof ClientsRoute
+  '/expenses': typeof ExpensesRoute
+  '/materials': typeof MaterialsRoute
+  '/requests': typeof RequestsRoute
+  '/salaries': typeof SalariesRoute
+  '/sales': typeof SalesRoute
+  '/workers': typeof WorkersRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/apartments'
+    | '/clients'
+    | '/expenses'
+    | '/materials'
+    | '/requests'
+    | '/salaries'
+    | '/sales'
+    | '/workers'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/apartments'
+    | '/clients'
+    | '/expenses'
+    | '/materials'
+    | '/requests'
+    | '/salaries'
+    | '/sales'
+    | '/workers'
+  id:
+    | '__root__'
+    | '/'
+    | '/apartments'
+    | '/clients'
+    | '/expenses'
+    | '/materials'
+    | '/requests'
+    | '/salaries'
+    | '/sales'
+    | '/workers'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApartmentsRoute: typeof ApartmentsRoute
+  ClientsRoute: typeof ClientsRoute
+  ExpensesRoute: typeof ExpensesRoute
+  MaterialsRoute: typeof MaterialsRoute
+  RequestsRoute: typeof RequestsRoute
+  SalariesRoute: typeof SalariesRoute
+  SalesRoute: typeof SalesRoute
+  WorkersRoute: typeof WorkersRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/workers': {
+      id: '/workers'
+      path: '/workers'
+      fullPath: '/workers'
+      preLoaderRoute: typeof WorkersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sales': {
+      id: '/sales'
+      path: '/sales'
+      fullPath: '/sales'
+      preLoaderRoute: typeof SalesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/salaries': {
+      id: '/salaries'
+      path: '/salaries'
+      fullPath: '/salaries'
+      preLoaderRoute: typeof SalariesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/requests': {
+      id: '/requests'
+      path: '/requests'
+      fullPath: '/requests'
+      preLoaderRoute: typeof RequestsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/materials': {
+      id: '/materials'
+      path: '/materials'
+      fullPath: '/materials'
+      preLoaderRoute: typeof MaterialsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/expenses': {
+      id: '/expenses'
+      path: '/expenses'
+      fullPath: '/expenses'
+      preLoaderRoute: typeof ExpensesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clients': {
+      id: '/clients'
+      path: '/clients'
+      fullPath: '/clients'
+      preLoaderRoute: typeof ClientsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/apartments': {
+      id: '/apartments'
+      path: '/apartments'
+      fullPath: '/apartments'
+      preLoaderRoute: typeof ApartmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +217,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApartmentsRoute: ApartmentsRoute,
+  ClientsRoute: ClientsRoute,
+  ExpensesRoute: ExpensesRoute,
+  MaterialsRoute: MaterialsRoute,
+  RequestsRoute: RequestsRoute,
+  SalariesRoute: SalariesRoute,
+  SalesRoute: SalesRoute,
+  WorkersRoute: WorkersRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
