@@ -39,16 +39,34 @@ const PURPOSES: FloorPurpose[] = [
   "mixed",
 ];
 
-interface FloorDraft {
-  floorNumber: number;
-  purpose: FloorPurpose;
-  flatsCount: number;
+interface FlatTypeDraft {
+  name: string;
+  count: number;
   bedrooms: number;
   bathrooms: number;
   kitchens: number;
   livingRooms: number;
   area: number;
   price: number;
+}
+
+interface FloorDraft {
+  floorNumber: number;
+  purpose: FloorPurpose;
+  types: FlatTypeDraft[];
+}
+
+function defaultType(name = "3-Bedroom"): FlatTypeDraft {
+  return {
+    name,
+    count: 2,
+    bedrooms: 3,
+    bathrooms: 2,
+    kitchens: 1,
+    livingRooms: 1,
+    area: 110,
+    price: 70000,
+  };
 }
 
 function defaultFloors(count: number): FloorDraft[] {
@@ -58,13 +76,7 @@ function defaultFloors(count: number): FloorDraft[] {
     arr.push({
       floorNumber: i,
       purpose: isGround ? "parking" : "residential",
-      flatsCount: isGround ? 0 : 4,
-      bedrooms: 2,
-      bathrooms: 1,
-      kitchens: 1,
-      livingRooms: 1,
-      area: 90,
-      price: 50000,
+      types: isGround ? [] : [defaultType("3-Bedroom"), { ...defaultType("2-Bedroom"), bedrooms: 2, area: 85, price: 55000, count: 2 }],
     });
   }
   return arr;
