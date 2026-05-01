@@ -46,6 +46,7 @@ export function AppSidebar() {
     {
       label: t("realEstate"),
       items: [
+        { to: "/buildings", icon: Building2, label: t("buildings") },
         { to: "/apartments", icon: Building2, label: t("apartments") },
         { to: "/clients", icon: Users, label: t("clients") },
         { to: "/sales", icon: ShoppingCart, label: t("sales") },
