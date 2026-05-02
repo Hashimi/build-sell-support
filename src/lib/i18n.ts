@@ -263,6 +263,8 @@ export const translations = {
     count: "Count",
     remove: "Remove",
     noFlatTypes: "No flat types defined for this floor",
+    applyToAll: "Apply to all floors",
+    appliedToAll: "Settings applied to all floors",
   },
 } as const;
 
