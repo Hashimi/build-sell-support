@@ -132,6 +132,8 @@ export const translations = {
     count: "تعداد",
     remove: "حذف",
     noFlatTypes: "برای این طبقه نوعی تعریف نشده است",
+    applyToAll: "اعمال برای همه طبقات",
+    appliedToAll: "تنظیمات برای همه طبقات اعمال شد",
   },
   en: {
     appName: "Construction & Real Estate",
