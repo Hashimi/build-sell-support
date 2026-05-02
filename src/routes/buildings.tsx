@@ -147,6 +147,17 @@ function BuildingsPage() {
     );
   };
 
+  const applyToAll = (fIdx: number) => {
+    setDraft((d) => {
+      const src = d[fIdx];
+      const clonedTypes = src.types.map((t) => ({ ...t }));
+      return d.map((f, i) =>
+        i === fIdx ? f : { ...f, purpose: src.purpose, types: clonedTypes.map((t) => ({ ...t })) },
+      );
+    });
+    toast.success(t("appliedToAll"));
+  };
+
   const create = () => {
     const building = repo.add("buildings", {
       name,
