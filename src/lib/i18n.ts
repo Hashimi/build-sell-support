@@ -132,6 +132,8 @@ export const translations = {
     count: "تعداد",
     remove: "حذف",
     noFlatTypes: "برای این طبقه نوعی تعریف نشده است",
+    applyToAll: "اعمال برای همه طبقات",
+    appliedToAll: "تنظیمات برای همه طبقات اعمال شد",
   },
   en: {
     appName: "Construction & Real Estate",
@@ -261,6 +263,8 @@ export const translations = {
     count: "Count",
     remove: "Remove",
     noFlatTypes: "No flat types defined for this floor",
+    applyToAll: "Apply to all floors",
+    appliedToAll: "Settings applied to all floors",
   },
 } as const;
 

@@ -147,6 +147,17 @@ function BuildingsPage() {
     );
   };
 
+  const applyToAll = (fIdx: number) => {
+    setDraft((d) => {
+      const src = d[fIdx];
+      const clonedTypes = src.types.map((t) => ({ ...t }));
+      return d.map((f, i) =>
+        i === fIdx ? f : { ...f, purpose: src.purpose, types: clonedTypes.map((t) => ({ ...t })) },
+      );
+    });
+    toast.success(t("appliedToAll"));
+  };
+
   const create = () => {
     const building = repo.add("buildings", {
       name,
@@ -262,11 +273,21 @@ function BuildingsPage() {
           <div className="grid gap-3 max-h-[60vh] overflow-y-auto pr-1">
             {draft.map((f, idx) => (
               <Card key={idx} className="border-primary/20">
-                <CardHeader className="pb-2">
+                <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Layers className="h-4 w-4 text-primary" />
                     {t("floor")} {f.floorNumber}
                   </CardTitle>
+                  {draft.length > 1 && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => applyToAll(idx)}
+                    >
+                      ⇊ {t("applyToAll")}
+                    </Button>
+                  )}
                 </CardHeader>
                 <CardContent className="grid gap-2">
                   <div className="grid grid-cols-2 gap-2">
