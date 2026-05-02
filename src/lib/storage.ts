@@ -57,7 +57,44 @@ export interface Building extends Entity {
 export interface Floor extends Entity {
   buildingId: string;
   floorNumber: number;
+  /** Display label, e.g. "B1", "GF", "1", "M". Falls back to floorNumber. */
+  label?: string;
   purpose: FloorPurpose;
+  notes?: string;
+}
+
+export interface ParkingSlot extends Entity {
+  buildingId: string;
+  floorId: string;
+  slotNo: string;
+  status: "available" | "assigned" | "sold";
+  assignedClientId?: string;
+  monthlyFee?: number;
+  notes?: string;
+}
+
+export type ShopStatus = "available" | "rented" | "sold";
+
+export interface Shop extends Entity {
+  buildingId: string;
+  floorId: string;
+  shopNo: string;
+  area: number;
+  monthlyRent: number;
+  salePrice: number;
+  status: ShopStatus;
+  clientId?: string;
+  startDate?: string;
+  notes?: string;
+}
+
+export interface ShopPayment extends Entity {
+  shopId: string;
+  clientId?: string;
+  amount: number;
+  date: string;
+  type: "rent" | "sale" | "deposit" | "other";
+  period?: string; // YYYY-MM for rent
   notes?: string;
 }
 
@@ -112,6 +149,9 @@ type StoreMap = {
   buildings: Building;
   floors: Floor;
   apartments: Apartment;
+  parkingSlots: ParkingSlot;
+  shops: Shop;
+  shopPayments: ShopPayment;
   clients: Client;
   sales: Sale;
   requests: ServiceRequest;

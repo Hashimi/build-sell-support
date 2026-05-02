@@ -11,6 +11,7 @@ import {
   Wrench,
   Hammer,
   Home,
+  Store,
 } from "lucide-react";
 import {
   Sidebar,
@@ -48,6 +49,7 @@ export function AppSidebar() {
       items: [
         { to: "/buildings", icon: Building2, label: t("buildings") },
         { to: "/apartments", icon: Building2, label: t("apartments") },
+        { to: "/commercial", icon: Store, label: t("commercial_dashboard") },
         { to: "/clients", icon: Users, label: t("clients") },
         { to: "/sales", icon: ShoppingCart, label: t("sales") },
       ],

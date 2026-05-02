@@ -15,6 +15,7 @@ import { Route as SalariesRouteImport } from './routes/salaries'
 import { Route as RequestsRouteImport } from './routes/requests'
 import { Route as MaterialsRouteImport } from './routes/materials'
 import { Route as ExpensesRouteImport } from './routes/expenses'
+import { Route as CommercialRouteImport } from './routes/commercial'
 import { Route as ClientsRouteImport } from './routes/clients'
 import { Route as BuildingsRouteImport } from './routes/buildings'
 import { Route as ApartmentsRouteImport } from './routes/apartments'
@@ -50,6 +51,11 @@ const ExpensesRoute = ExpensesRouteImport.update({
   path: '/expenses',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommercialRoute = CommercialRouteImport.update({
+  id: '/commercial',
+  path: '/commercial',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ClientsRoute = ClientsRouteImport.update({
   id: '/clients',
   path: '/clients',
@@ -76,6 +82,7 @@ export interface FileRoutesByFullPath {
   '/apartments': typeof ApartmentsRoute
   '/buildings': typeof BuildingsRoute
   '/clients': typeof ClientsRoute
+  '/commercial': typeof CommercialRoute
   '/expenses': typeof ExpensesRoute
   '/materials': typeof MaterialsRoute
   '/requests': typeof RequestsRoute
@@ -88,6 +95,7 @@ export interface FileRoutesByTo {
   '/apartments': typeof ApartmentsRoute
   '/buildings': typeof BuildingsRoute
   '/clients': typeof ClientsRoute
+  '/commercial': typeof CommercialRoute
   '/expenses': typeof ExpensesRoute
   '/materials': typeof MaterialsRoute
   '/requests': typeof RequestsRoute
@@ -101,6 +109,7 @@ export interface FileRoutesById {
   '/apartments': typeof ApartmentsRoute
   '/buildings': typeof BuildingsRoute
   '/clients': typeof ClientsRoute
+  '/commercial': typeof CommercialRoute
   '/expenses': typeof ExpensesRoute
   '/materials': typeof MaterialsRoute
   '/requests': typeof RequestsRoute
@@ -115,6 +124,7 @@ export interface FileRouteTypes {
     | '/apartments'
     | '/buildings'
     | '/clients'
+    | '/commercial'
     | '/expenses'
     | '/materials'
     | '/requests'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/apartments'
     | '/buildings'
     | '/clients'
+    | '/commercial'
     | '/expenses'
     | '/materials'
     | '/requests'
@@ -139,6 +150,7 @@ export interface FileRouteTypes {
     | '/apartments'
     | '/buildings'
     | '/clients'
+    | '/commercial'
     | '/expenses'
     | '/materials'
     | '/requests'
@@ -152,6 +164,7 @@ export interface RootRouteChildren {
   ApartmentsRoute: typeof ApartmentsRoute
   BuildingsRoute: typeof BuildingsRoute
   ClientsRoute: typeof ClientsRoute
+  CommercialRoute: typeof CommercialRoute
   ExpensesRoute: typeof ExpensesRoute
   MaterialsRoute: typeof MaterialsRoute
   RequestsRoute: typeof RequestsRoute
@@ -204,6 +217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExpensesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/commercial': {
+      id: '/commercial'
+      path: '/commercial'
+      fullPath: '/commercial'
+      preLoaderRoute: typeof CommercialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/clients': {
       id: '/clients'
       path: '/clients'
@@ -240,6 +260,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApartmentsRoute: ApartmentsRoute,
   BuildingsRoute: BuildingsRoute,
   ClientsRoute: ClientsRoute,
+  CommercialRoute: CommercialRoute,
   ExpensesRoute: ExpensesRoute,
   MaterialsRoute: MaterialsRoute,
   RequestsRoute: RequestsRoute,
