@@ -16,15 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Building2, Layers, Home as HomeIcon } from "lucide-react";
+import { Building2, Layers, Home as HomeIcon, Store, Car } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import {
   repo,
   useCollection,
-  uid,
   type FloorPurpose,
-  type Floor,
-  type Apartment,
 } from "@/lib/storage";
 import { toast } from "sonner";
 
@@ -52,8 +49,16 @@ interface FlatTypeDraft {
 
 interface FloorDraft {
   floorNumber: number;
+  label: string;
   purpose: FloorPurpose;
   types: FlatTypeDraft[];
+  // Parking
+  parkingSlots: number;
+  // Commercial
+  shopsCount: number;
+  shopArea: number;
+  shopMonthlyRent: number;
+  shopSalePrice: number;
 }
 
 function defaultType(name = "3-Bedroom"): FlatTypeDraft {
@@ -69,15 +74,30 @@ function defaultType(name = "3-Bedroom"): FlatTypeDraft {
   };
 }
 
-function defaultFloors(count: number): FloorDraft[] {
+function defaultFloor(num: number, purpose: FloorPurpose, label?: string): FloorDraft {
+  return {
+    floorNumber: num,
+    label: label ?? String(num),
+    purpose,
+    types:
+      purpose === "residential"
+        ? [defaultType("3-Bedroom"), { ...defaultType("2-Bedroom"), bedrooms: 2, area: 85, price: 55000, count: 2 }]
+        : [],
+    parkingSlots: purpose === "parking" ? 20 : 0,
+    shopsCount: purpose === "commercial" ? 6 : 0,
+    shopArea: 30,
+    shopMonthlyRent: 500,
+    shopSalePrice: 30000,
+  };
+}
+
+function defaultFloors(basements: number, above: number): FloorDraft[] {
   const arr: FloorDraft[] = [];
-  for (let i = 0; i < count; i++) {
-    const isGround = i === 0;
-    arr.push({
-      floorNumber: i,
-      purpose: isGround ? "parking" : "residential",
-      types: isGround ? [] : [defaultType("3-Bedroom"), { ...defaultType("2-Bedroom"), bedrooms: 2, area: 85, price: 55000, count: 2 }],
-    });
+  for (let i = basements; i >= 1; i--) {
+    arr.push(defaultFloor(-i, "parking", `B${i}`));
+  }
+  for (let i = 0; i < above; i++) {
+    arr.push(defaultFloor(i, i === 0 ? "commercial" : "residential", i === 0 ? "GF" : String(i)));
   }
   return arr;
 }
@@ -87,22 +107,26 @@ function BuildingsPage() {
   const buildings = useCollection("buildings");
   const floors = useCollection("floors");
   const apartments = useCollection("apartments");
+  const shops = useCollection("shops");
+  const parkingSlots = useCollection("parkingSlots");
 
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [address, setAddress] = useState("");
   const [notes, setNotes] = useState("");
-  const [floorsCount, setFloorsCount] = useState(5);
-  const [draft, setDraft] = useState<FloorDraft[]>(defaultFloors(5));
+  const [basementCount, setBasementCount] = useState(2);
+  const [aboveCount, setAboveCount] = useState(5);
+  const [draft, setDraft] = useState<FloorDraft[]>(defaultFloors(2, 5));
 
   const reset = () => {
     setStep(1);
     setName("");
     setAddress("");
     setNotes("");
-    setFloorsCount(5);
-    setDraft(defaultFloors(5));
+    setBasementCount(2);
+    setAboveCount(5);
+    setDraft(defaultFloors(2, 5));
   };
 
   const openNew = () => {
@@ -115,7 +139,7 @@ function BuildingsPage() {
       toast.error(t("buildingName"));
       return;
     }
-    setDraft(defaultFloors(floorsCount));
+    setDraft(defaultFloors(basementCount, aboveCount));
     setStep(2);
   };
 
@@ -152,45 +176,48 @@ function BuildingsPage() {
       const src = d[fIdx];
       const clonedTypes = src.types.map((t) => ({ ...t }));
       return d.map((f, i) =>
-        i === fIdx ? f : { ...f, purpose: src.purpose, types: clonedTypes.map((t) => ({ ...t })) },
+        i === fIdx
+          ? f
+          : {
+              ...f,
+              purpose: src.purpose,
+              types: clonedTypes.map((t) => ({ ...t })),
+              parkingSlots: src.parkingSlots,
+              shopsCount: src.shopsCount,
+              shopArea: src.shopArea,
+              shopMonthlyRent: src.shopMonthlyRent,
+              shopSalePrice: src.shopSalePrice,
+            },
       );
     });
     toast.success(t("appliedToAll"));
   };
 
   const create = () => {
+    const totalFloors = draft.length;
     const building = repo.add("buildings", {
       name,
       address,
       notes,
-      floorsCount,
+      floorsCount: totalFloors,
     });
-    const now = new Date().toISOString();
-    const newFloors: Floor[] = [];
-    const newFlats: Apartment[] = [];
     draft.forEach((f) => {
-      const fl: Floor = {
-        id: uid(),
-        createdAt: now,
-        updatedAt: now,
+      const fl = repo.add("floors", {
         buildingId: building.id,
         floorNumber: f.floorNumber,
+        label: f.label,
         purpose: f.purpose,
-      };
-      newFloors.push(fl);
-      if (f.purpose === "residential" || f.purpose === "mixed" || f.purpose === "commercial") {
+      });
+      if (f.purpose === "residential" || f.purpose === "mixed") {
         let seq = 1;
         f.types.forEach((tp) => {
           for (let i = 0; i < tp.count; i++) {
-            newFlats.push({
-              id: uid(),
-              createdAt: now,
-              updatedAt: now,
+            repo.add("apartments", {
               buildingId: building.id,
               floorId: fl.id,
               block: name,
               floor: f.floorNumber,
-              apartmentNo: `${f.floorNumber}${String(seq).padStart(2, "0")}`,
+              apartmentNo: `${f.label}-${String(seq).padStart(2, "0")}`,
               rooms: tp.bedrooms,
               bathrooms: tp.bathrooms,
               kitchens: tp.kitchens,
@@ -204,19 +231,28 @@ function BuildingsPage() {
             seq++;
           }
         });
+      } else if (f.purpose === "commercial") {
+        for (let i = 1; i <= f.shopsCount; i++) {
+          repo.add("shops", {
+            buildingId: building.id,
+            floorId: fl.id,
+            shopNo: `${f.label}-S${String(i).padStart(2, "0")}`,
+            area: f.shopArea,
+            monthlyRent: f.shopMonthlyRent,
+            salePrice: f.shopSalePrice,
+            status: "available",
+          });
+        }
+      } else if (f.purpose === "parking") {
+        for (let i = 1; i <= f.parkingSlots; i++) {
+          repo.add("parkingSlots", {
+            buildingId: building.id,
+            floorId: fl.id,
+            slotNo: `${f.label}-P${String(i).padStart(3, "0")}`,
+            status: "available",
+          });
+        }
       }
-    });
-    // Bulk write via repo.add loop would emit many events; do direct writes
-    newFloors.forEach((fl) => {
-      repo.add("floors", {
-        buildingId: fl.buildingId,
-        floorNumber: fl.floorNumber,
-        purpose: fl.purpose,
-      });
-    });
-    newFlats.forEach((a) => {
-      const { id: _id, createdAt: _c, updatedAt: _u, ...rest } = a;
-      repo.add("apartments", rest);
     });
     toast.success(t("save"));
     setOpen(false);
@@ -225,6 +261,8 @@ function BuildingsPage() {
   const removeBuilding = (id: string) => {
     floors.filter((f) => f.buildingId === id).forEach((f) => repo.remove("floors", f.id));
     apartments.filter((a) => a.buildingId === id).forEach((a) => repo.remove("apartments", a.id));
+    shops.filter((s) => s.buildingId === id).forEach((s) => repo.remove("shops", s.id));
+    parkingSlots.filter((p) => p.buildingId === id).forEach((p) => repo.remove("parkingSlots", p.id));
     repo.remove("buildings", id);
   };
 
@@ -257,14 +295,27 @@ function BuildingsPage() {
             <F label={t("address")}>
               <Input value={address} onChange={(e) => setAddress(e.target.value)} />
             </F>
-            <F label={t("floorsCount")}>
-              <Input
-                type="number"
-                min={1}
-                value={floorsCount}
-                onChange={(e) => setFloorsCount(Math.max(1, +e.target.value))}
-              />
-            </F>
+            <div className="grid grid-cols-2 gap-2">
+              <F label={`${t("parking")} (${t("floorsCount")})`}>
+                <Input
+                  type="number"
+                  min={0}
+                  value={basementCount}
+                  onChange={(e) => setBasementCount(Math.max(0, +e.target.value))}
+                />
+              </F>
+              <F label={`${t("floor")} ↑ (${t("floorsCount")})`}>
+                <Input
+                  type="number"
+                  min={1}
+                  value={aboveCount}
+                  onChange={(e) => setAboveCount(Math.max(1, +e.target.value))}
+                />
+              </F>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {basementCount} basement(s) + {aboveCount} above-ground = {basementCount + aboveCount} {t("floor")}
+            </p>
             <F label={t("notes")}>
               <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
             </F>
@@ -276,7 +327,7 @@ function BuildingsPage() {
                 <CardHeader className="pb-2 flex flex-row items-center justify-between gap-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Layers className="h-4 w-4 text-primary" />
-                    {t("floor")} {f.floorNumber}
+                    {t("floor")} <Badge variant="outline">{f.label}</Badge>
                   </CardTitle>
                   {draft.length > 1 && (
                     <Button
@@ -290,7 +341,14 @@ function BuildingsPage() {
                   )}
                 </CardHeader>
                 <CardContent className="grid gap-2">
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
+                    <F label={t("floorLabel")}>
+                      <Input
+                        value={f.label}
+                        onChange={(e) => updateFloor(idx, { label: e.target.value })}
+                        placeholder={t("floorLabelHint")}
+                      />
+                    </F>
                     <F label={t("floorPurpose")}>
                       <Select
                         value={f.purpose}
@@ -310,11 +368,74 @@ function BuildingsPage() {
                     </F>
                     <div className="flex items-end justify-end">
                       <span className="text-xs text-muted-foreground">
-                        {f.types.reduce((s, x) => s + x.count, 0)} {t("flats")}
+                        {f.purpose === "parking"
+                          ? `${f.parkingSlots} ${t("parkingSlots")}`
+                          : f.purpose === "commercial"
+                          ? `${f.shopsCount} ${t("shops")}`
+                          : `${f.types.reduce((s, x) => s + x.count, 0)} ${t("flats")}`}
                       </span>
                     </div>
                   </div>
-                  {(f.purpose === "residential" || f.purpose === "mixed" || f.purpose === "commercial") && (
+
+                  {f.purpose === "parking" && (
+                    <div className="rounded-md border bg-muted/30 p-2 flex items-center gap-2">
+                      <Car className="h-4 w-4 text-primary" />
+                      <F label={t("parkingSlots")}>
+                        <Input
+                          type="number"
+                          min={0}
+                          value={f.parkingSlots}
+                          onChange={(e) => updateFloor(idx, { parkingSlots: +e.target.value })}
+                        />
+                      </F>
+                    </div>
+                  )}
+
+                  {f.purpose === "commercial" && (
+                    <div className="rounded-md border bg-muted/30 p-2 space-y-2">
+                      <div className="flex items-center gap-2 text-xs font-semibold">
+                        <Store className="h-4 w-4 text-primary" /> {t("shops")}
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <F label={t("shopsCount")}>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={f.shopsCount}
+                            onChange={(e) => updateFloor(idx, { shopsCount: +e.target.value })}
+                          />
+                        </F>
+                        <F label={t("shopArea")}>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={f.shopArea}
+                            onChange={(e) => updateFloor(idx, { shopArea: +e.target.value })}
+                          />
+                        </F>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <F label={t("defaultMonthlyRent")}>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={f.shopMonthlyRent}
+                            onChange={(e) => updateFloor(idx, { shopMonthlyRent: +e.target.value })}
+                          />
+                        </F>
+                        <F label={t("defaultSalePrice")}>
+                          <Input
+                            type="number"
+                            min={0}
+                            value={f.shopSalePrice}
+                            onChange={(e) => updateFloor(idx, { shopSalePrice: +e.target.value })}
+                          />
+                        </F>
+                      </div>
+                    </div>
+                  )}
+
+                  {(f.purpose === "residential" || f.purpose === "mixed") && (
                     <div className="space-y-2 rounded-md border bg-muted/30 p-2">
                       <div className="flex items-center justify-between">
                         <span className="text-xs font-semibold">{t("flatTypes")}</span>
@@ -423,6 +544,8 @@ function BuildingsPage() {
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {buildings.map((b) => {
             const flats = apartments.filter((a) => a.buildingId === b.id);
+            const bShops = shops.filter((s) => s.buildingId === b.id);
+            const bPark = parkingSlots.filter((p) => p.buildingId === b.id);
             const available = flats.filter((a) => a.status === "available").length;
             const totalValue = flats.reduce((s, a) => s + a.price, 0);
             return (
@@ -445,6 +568,14 @@ function BuildingsPage() {
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{t("totalFlats")}</span>
                     <span className="font-medium">{flats.length}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t("shops")}</span>
+                    <span className="font-medium">{bShops.length}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">{t("parkingSlots")}</span>
+                    <span className="font-medium">{bPark.length}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-muted-foreground">{t("available_units")}</span>
@@ -476,7 +607,7 @@ function BuildingsPage() {
 function F({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid gap-1.5">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+      <Label className="text-xs">{label}</Label>
       {children}
     </div>
   );
