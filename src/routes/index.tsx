@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, HardHat, Building2, ShoppingCart, Wrench, Receipt, ArrowRight, ArrowLeft } from "lucide-react";
+import { Package, HardHat, Building2, ShoppingCart, Wrench, Receipt, ArrowRight, ArrowLeft, CheckCircle2, Clock, Wallet } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useCollection } from "@/lib/storage";
 import { PageHeader } from "@/components/PageHeader";
