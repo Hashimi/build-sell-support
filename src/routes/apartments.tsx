@@ -15,6 +15,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Building2, Bed, Bath, ChefHat, Sofa } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { repo, useCollection, type Apartment } from "@/lib/storage";
