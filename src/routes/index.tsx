@@ -14,22 +14,43 @@ function Dashboard() {
   const materials = useCollection("materials");
   const workers = useCollection("workers");
   const apartments = useCollection("apartments");
+  const buildings = useCollection("buildings");
   const sales = useCollection("sales");
   const requests = useCollection("requests");
   const expenses = useCollection("expenses");
 
   const totalSales = sales.reduce((s, x) => s + x.salePrice, 0);
+  const paidFromSales = sales.reduce((s, x) => s + x.paidAmount, 0);
+  const pendingFromSales = Math.max(0, totalSales - paidFromSales);
+  const soldCount = apartments.filter((a) => a.status === "sold").length;
+  const availableCount = apartments.filter((a) => a.status === "available").length;
   const monthlyExp = expenses
     .filter((e) => e.date?.startsWith(new Date().toISOString().slice(0, 7)))
     .reduce((s, x) => s + x.amount, 0);
   const openReqs = requests.filter((r) => r.status !== "completed").length;
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
+  const perBuilding = buildings.map((b) => {
+    const units = apartments.filter((a) => a.buildingId === b.id);
+    return {
+      id: b.id,
+      name: b.name,
+      total: units.length,
+      sold: units.filter((u) => u.status === "sold").length,
+      available: units.filter((u) => u.status === "available").length,
+      reserved: units.filter((u) => u.status === "reserved").length,
+    };
+  });
+
   const cards = [
     { icon: Package, label: t("totalMaterials"), value: materials.length.toString(), to: "/materials", color: "from-chart-1/20 to-chart-1/5" },
     { icon: HardHat, label: t("totalWorkers"), value: workers.length.toString(), to: "/workers", color: "from-chart-2/20 to-chart-2/5" },
     { icon: Building2, label: t("totalApartments"), value: apartments.length.toString(), to: "/apartments", color: "from-chart-3/20 to-chart-3/5" },
+    { icon: CheckCircle2, label: t("soldApartments"), value: soldCount.toString(), to: "/apartments", color: "from-chart-2/20 to-chart-2/5" },
+    { icon: Building2, label: t("availableApartments"), value: availableCount.toString(), to: "/apartments", color: "from-chart-3/20 to-chart-3/5" },
     { icon: ShoppingCart, label: t("totalSales"), value: formatMoney(totalSales), to: "/sales", color: "from-chart-4/20 to-chart-4/5" },
+    { icon: Wallet, label: t("paidFromSales"), value: formatMoney(paidFromSales), to: "/sales", color: "from-chart-2/20 to-chart-2/5" },
+    { icon: Clock, label: t("pendingFromSales"), value: formatMoney(pendingFromSales), to: "/sales", color: "from-destructive/20 to-destructive/5" },
     { icon: Wrench, label: t("openRequests"), value: openReqs.toString(), to: "/requests", color: "from-chart-5/20 to-chart-5/5" },
     { icon: Receipt, label: t("monthlyExpenses"), value: formatMoney(monthlyExp), to: "/expenses", color: "from-destructive/20 to-destructive/5" },
   ] as const;
