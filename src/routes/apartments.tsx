@@ -53,30 +53,9 @@ function ApartmentsPage() {
   const { buildingId: initialBuildingId } = Route.useSearch();
   const buildings = useCollection("buildings");
   const items = useCollection("apartments");
-  const [filterBuilding, setFilterBuilding] = useState<string>(initialBuildingId ?? "all");
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Apartment | null>(null);
   const [form, setForm] = useState(empty);
-
-  const filtered = useMemo(
-    () =>
-      filterBuilding === "all"
-        ? items
-        : items.filter((a) => a.buildingId === filterBuilding),
-    [items, filterBuilding],
-  );
-
-  const grouped = useMemo(() => {
-    const map = new Map<string, Map<number, Apartment[]>>();
-    filtered.forEach((a) => {
-      const bKey = a.buildingId ?? "_none";
-      if (!map.has(bKey)) map.set(bKey, new Map());
-      const fmap = map.get(bKey)!;
-      if (!fmap.has(a.floor)) fmap.set(a.floor, []);
-      fmap.get(a.floor)!.push(a);
-    });
-    return map;
-  }, [filtered]);
 
   const startEdit = (a: Apartment) => {
     setEditing(a);
