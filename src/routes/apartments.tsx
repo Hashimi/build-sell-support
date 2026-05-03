@@ -82,8 +82,6 @@ function ApartmentsPage() {
     return true;
   };
 
-  const buildingName = (id?: string) =>
-    buildings.find((b) => b.id === id)?.name ?? "—";
 
   const buildingsWithFlats = useMemo(
     () => buildings.filter((b) => items.some((a) => a.buildingId === b.id)),
