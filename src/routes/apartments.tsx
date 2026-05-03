@@ -106,27 +106,75 @@ function ApartmentsPage() {
   const buildingName = (id?: string) =>
     buildings.find((b) => b.id === id)?.name ?? "—";
 
+  const buildingsWithFlats = useMemo(
+    () => buildings.filter((b) => items.some((a) => a.buildingId === b.id)),
+    [buildings, items],
+  );
+  const orphan = useMemo(
+    () => items.filter((a) => !a.buildingId || !buildings.find((b) => b.id === a.buildingId)),
+    [items, buildings],
+  );
+
+  const tabBuildings = buildingsWithFlats;
+  const defaultTab =
+    initialBuildingId && tabBuildings.find((b) => b.id === initialBuildingId)
+      ? initialBuildingId
+      : tabBuildings[0]?.id ?? (orphan.length ? "_none" : "");
+
+  const renderFloors = (list: Apartment[]) => {
+    const fmap = new Map<number, Apartment[]>();
+    list.forEach((a) => {
+      if (!fmap.has(a.floor)) fmap.set(a.floor, []);
+      fmap.get(a.floor)!.push(a);
+    });
+    return (
+      <div className="space-y-6">
+        {Array.from(fmap.entries())
+          .sort(([a], [b]) => b - a)
+          .map(([floorNum, flats]) => (
+            <div key={floorNum}>
+              <p className="mb-2 text-sm font-medium text-muted-foreground">
+                {t("floor")} {floorNum}
+              </p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {flats.map((a) => (
+                  <Card key={a.id} className="group transition-all hover:shadow-elegant">
+                    <CardHeader className="flex flex-row items-start justify-between pb-2">
+                      <CardTitle className="text-sm">#{a.apartmentNo}</CardTitle>
+                      <Badge variant={statusVariant[a.status]}>{t(a.status)}</Badge>
+                    </CardHeader>
+                    <CardContent className="space-y-2">
+                      <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                        <span className="inline-flex items-center gap-1"><Bed className="h-3 w-3" />{a.rooms}</span>
+                        <span className="inline-flex items-center gap-1"><Bath className="h-3 w-3" />{a.bathrooms ?? 0}</span>
+                        <span className="inline-flex items-center gap-1"><ChefHat className="h-3 w-3" />{a.kitchens ?? 0}</span>
+                        <span className="inline-flex items-center gap-1"><Sofa className="h-3 w-3" />{a.livingRooms ?? 0}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-muted-foreground">{t("area")}</span>
+                        <span>{a.area} m²</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2 text-sm">
+                        <span className="text-muted-foreground">{t("price")}</span>
+                        <span className="font-bold text-primary">{formatMoney(a.price)}</span>
+                      </div>
+                      <div className="flex justify-end gap-1">
+                        <EditButton onClick={() => startEdit(a)} />
+                        <DeleteButton onConfirm={() => repo.remove("apartments", a.id)} />
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          ))}
+      </div>
+    );
+  };
+
   return (
     <div>
-      <PageHeader
-        title={t("apartments")}
-        subtitle={t("realEstate")}
-        actions={
-          <Select value={filterBuilding} onValueChange={setFilterBuilding}>
-            <SelectTrigger className="w-[220px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("buildings")}</SelectItem>
-              {buildings.map((b) => (
-                <SelectItem key={b.id} value={b.id}>
-                  {b.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        }
-      />
+      <PageHeader title={t("apartments")} subtitle={t("realEstate")} />
 
       <FormDialog title={t("edit")} open={open} onOpenChange={setOpen} onSave={save}>
         <div className="grid grid-cols-3 gap-3">
@@ -184,60 +232,38 @@ function ApartmentsPage() {
         </F>
       </FormDialog>
 
-      {filtered.length === 0 ? (
+      {items.length === 0 || (tabBuildings.length === 0 && orphan.length === 0) ? (
         <EmptyState />
       ) : (
-        <div className="space-y-8">
-          {Array.from(grouped.entries()).map(([bId, fmap]) => (
-            <section key={bId}>
-              <div className="mb-3 flex items-center gap-2 border-b pb-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                <h2 className="text-lg font-bold">{buildingName(bId)}</h2>
-              </div>
-              <div className="space-y-6">
-                {Array.from(fmap.entries())
-                  .sort(([a], [b]) => b - a)
-                  .map(([floorNum, flats]) => (
-                    <div key={floorNum}>
-                      <p className="mb-2 text-sm font-medium text-muted-foreground">
-                        {t("floor")} {floorNum}
-                      </p>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                        {flats.map((a) => (
-                          <Card key={a.id} className="group transition-all hover:shadow-elegant">
-                            <CardHeader className="flex flex-row items-start justify-between pb-2">
-                              <CardTitle className="text-sm">#{a.apartmentNo}</CardTitle>
-                              <Badge variant={statusVariant[a.status]}>{t(a.status)}</Badge>
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                                <span className="inline-flex items-center gap-1"><Bed className="h-3 w-3" />{a.rooms}</span>
-                                <span className="inline-flex items-center gap-1"><Bath className="h-3 w-3" />{a.bathrooms ?? 0}</span>
-                                <span className="inline-flex items-center gap-1"><ChefHat className="h-3 w-3" />{a.kitchens ?? 0}</span>
-                                <span className="inline-flex items-center gap-1"><Sofa className="h-3 w-3" />{a.livingRooms ?? 0}</span>
-                              </div>
-                              <div className="flex justify-between text-xs">
-                                <span className="text-muted-foreground">{t("area")}</span>
-                                <span>{a.area} m²</span>
-                              </div>
-                              <div className="flex justify-between border-t pt-2 text-sm">
-                                <span className="text-muted-foreground">{t("price")}</span>
-                                <span className="font-bold text-primary">{formatMoney(a.price)}</span>
-                              </div>
-                              <div className="flex justify-end gap-1">
-                                <EditButton onClick={() => startEdit(a)} />
-                                <DeleteButton onConfirm={() => repo.remove("apartments", a.id)} />
-                              </div>
-                            </CardContent>
-                          </Card>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            </section>
+        <Tabs defaultValue={defaultTab} className="w-full">
+          <TabsList className="mb-4 flex h-auto flex-wrap justify-start gap-1 bg-muted/50 p-1">
+            {tabBuildings.map((b) => {
+              const count = items.filter((a) => a.buildingId === b.id).length;
+              return (
+                <TabsTrigger key={b.id} value={b.id} className="gap-2">
+                  <Building2 className="h-4 w-4" />
+                  {b.name}
+                  <Badge variant="secondary" className="ml-1">{count}</Badge>
+                </TabsTrigger>
+              );
+            })}
+            {orphan.length > 0 && (
+              <TabsTrigger value="_none" className="gap-2">
+                —
+                <Badge variant="secondary" className="ml-1">{orphan.length}</Badge>
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          {tabBuildings.map((b) => (
+            <TabsContent key={b.id} value={b.id}>
+              {renderFloors(items.filter((a) => a.buildingId === b.id))}
+            </TabsContent>
           ))}
-        </div>
+          {orphan.length > 0 && (
+            <TabsContent value="_none">{renderFloors(orphan)}</TabsContent>
+          )}
+        </Tabs>
       )}
     </div>
   );
