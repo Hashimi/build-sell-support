@@ -78,6 +78,32 @@ function Dashboard() {
         ))}
       </div>
 
+      {perBuilding.length > 0 && (
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle>{t("perBuilding")} — {t("apartments")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {perBuilding.map((b) => (
+                <Link key={b.id} to="/apartments" className="rounded-lg border p-3 transition-colors hover:bg-muted/50">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-primary" />
+                    <span className="font-medium">{b.name}</span>
+                    <span className="ms-auto text-xs text-muted-foreground">{b.total}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="rounded bg-chart-2/10 p-1.5"><div className="font-semibold">{b.sold}</div><div className="text-muted-foreground">{t("sold")}</div></div>
+                    <div className="rounded bg-chart-3/10 p-1.5"><div className="font-semibold">{b.available}</div><div className="text-muted-foreground">{t("available")}</div></div>
+                    <div className="rounded bg-chart-4/10 p-1.5"><div className="font-semibold">{b.reserved}</div><div className="text-muted-foreground">{t("reserved")}</div></div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader>
