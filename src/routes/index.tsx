@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, HardHat, Building2, ShoppingCart, Wrench, Receipt, ArrowRight, ArrowLeft } from "lucide-react";
+import { Package, HardHat, Building2, ShoppingCart, Wrench, Receipt, ArrowRight, ArrowLeft, CheckCircle2, Clock, Wallet } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useCollection } from "@/lib/storage";
 import { PageHeader } from "@/components/PageHeader";
@@ -14,22 +14,43 @@ function Dashboard() {
   const materials = useCollection("materials");
   const workers = useCollection("workers");
   const apartments = useCollection("apartments");
+  const buildings = useCollection("buildings");
   const sales = useCollection("sales");
   const requests = useCollection("requests");
   const expenses = useCollection("expenses");
 
   const totalSales = sales.reduce((s, x) => s + x.salePrice, 0);
+  const paidFromSales = sales.reduce((s, x) => s + x.paidAmount, 0);
+  const pendingFromSales = Math.max(0, totalSales - paidFromSales);
+  const soldCount = apartments.filter((a) => a.status === "sold").length;
+  const availableCount = apartments.filter((a) => a.status === "available").length;
   const monthlyExp = expenses
     .filter((e) => e.date?.startsWith(new Date().toISOString().slice(0, 7)))
     .reduce((s, x) => s + x.amount, 0);
   const openReqs = requests.filter((r) => r.status !== "completed").length;
   const Arrow = dir === "rtl" ? ArrowLeft : ArrowRight;
 
+  const perBuilding = buildings.map((b) => {
+    const units = apartments.filter((a) => a.buildingId === b.id);
+    return {
+      id: b.id,
+      name: b.name,
+      total: units.length,
+      sold: units.filter((u) => u.status === "sold").length,
+      available: units.filter((u) => u.status === "available").length,
+      reserved: units.filter((u) => u.status === "reserved").length,
+    };
+  });
+
   const cards = [
     { icon: Package, label: t("totalMaterials"), value: materials.length.toString(), to: "/materials", color: "from-chart-1/20 to-chart-1/5" },
     { icon: HardHat, label: t("totalWorkers"), value: workers.length.toString(), to: "/workers", color: "from-chart-2/20 to-chart-2/5" },
     { icon: Building2, label: t("totalApartments"), value: apartments.length.toString(), to: "/apartments", color: "from-chart-3/20 to-chart-3/5" },
+    { icon: CheckCircle2, label: t("soldApartments"), value: soldCount.toString(), to: "/apartments", color: "from-chart-2/20 to-chart-2/5" },
+    { icon: Building2, label: t("availableApartments"), value: availableCount.toString(), to: "/apartments", color: "from-chart-3/20 to-chart-3/5" },
     { icon: ShoppingCart, label: t("totalSales"), value: formatMoney(totalSales), to: "/sales", color: "from-chart-4/20 to-chart-4/5" },
+    { icon: Wallet, label: t("paidFromSales"), value: formatMoney(paidFromSales), to: "/sales", color: "from-chart-2/20 to-chart-2/5" },
+    { icon: Clock, label: t("pendingFromSales"), value: formatMoney(pendingFromSales), to: "/sales", color: "from-destructive/20 to-destructive/5" },
     { icon: Wrench, label: t("openRequests"), value: openReqs.toString(), to: "/requests", color: "from-chart-5/20 to-chart-5/5" },
     { icon: Receipt, label: t("monthlyExpenses"), value: formatMoney(monthlyExp), to: "/expenses", color: "from-destructive/20 to-destructive/5" },
   ] as const;
@@ -56,6 +77,32 @@ function Dashboard() {
           </Link>
         ))}
       </div>
+
+      {perBuilding.length > 0 && (
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle>{t("perBuilding")} — {t("apartments")}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {perBuilding.map((b) => (
+                <Link key={b.id} to="/apartments" search={{ buildingId: b.id }} className="rounded-lg border p-3 transition-colors hover:bg-muted/50">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-primary" />
+                    <span className="font-medium">{b.name}</span>
+                    <span className="ms-auto text-xs text-muted-foreground">{b.total}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div className="rounded bg-chart-2/10 p-1.5"><div className="font-semibold">{b.sold}</div><div className="text-muted-foreground">{t("sold")}</div></div>
+                    <div className="rounded bg-chart-3/10 p-1.5"><div className="font-semibold">{b.available}</div><div className="text-muted-foreground">{t("available")}</div></div>
+                    <div className="rounded bg-chart-4/10 p-1.5"><div className="font-semibold">{b.reserved}</div><div className="text-muted-foreground">{t("reserved")}</div></div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="mt-8 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card>
