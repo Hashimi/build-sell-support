@@ -122,12 +122,22 @@ export interface Client extends Entity {
   notes?: string;
 }
 
+export interface InstallmentEntry {
+  no: number;
+  dueDate: string; // YYYY-MM-DD
+  amount: number;
+  paid: boolean;
+  paidDate?: string;
+}
+
 export interface Sale extends Entity {
   clientId: string;
   apartmentId: string;
   salePrice: number;
   paidAmount: number;
   date: string;
+  installmentsCount?: number; // 0 or undefined = no installments
+  installments?: InstallmentEntry[];
   notes?: string;
 }
 
