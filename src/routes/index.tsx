@@ -86,7 +86,7 @@ function Dashboard() {
           <CardContent>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {perBuilding.map((b) => (
-                <Link key={b.id} to="/apartments" className="rounded-lg border p-3 transition-colors hover:bg-muted/50">
+                <Link key={b.id} to="/apartments" search={{ buildingId: b.id }} className="rounded-lg border p-3 transition-colors hover:bg-muted/50">
                   <div className="mb-2 flex items-center gap-2">
                     <Building2 className="h-4 w-4 text-primary" />
                     <span className="font-medium">{b.name}</span>
