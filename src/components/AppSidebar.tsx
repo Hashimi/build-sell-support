@@ -12,6 +12,7 @@ import {
   Hammer,
   Home,
   Store,
+  Settings,
 } from "lucide-react";
 import {
   Sidebar,
@@ -57,6 +58,10 @@ export function AppSidebar() {
     {
       label: t("support"),
       items: [{ to: "/requests", icon: Wrench, label: t("requests") }],
+    },
+    {
+      label: t("settings"),
+      items: [{ to: "/settings", icon: Settings, label: t("companySettings") }],
     },
   ];
 
