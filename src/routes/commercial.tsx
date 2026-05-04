@@ -27,6 +27,7 @@ import {
 import { Store, DollarSign, TrendingUp, Percent, UserPlus, Receipt } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { repo, useCollection, type Shop, type ShopPayment } from "@/lib/storage";
+import { PaymentReceiptDialog, type ReceiptData } from "@/components/PaymentReceipt";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/commercial")({ component: CommercialPage });
@@ -42,6 +43,7 @@ function CommercialPage() {
   const [buildingFilter, setBuildingFilter] = useState<string>("all");
   const [assignShop, setAssignShop] = useState<Shop | null>(null);
   const [payShop, setPayShop] = useState<Shop | null>(null);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
 
   const [aClient, setAClient] = useState("");
   const [aStatus, setAStatus] = useState<"rented" | "sold">("rented");
@@ -120,6 +122,22 @@ function CommercialPage() {
       date: pDate,
       type: pType,
       period: pType === "rent" ? pPeriod : undefined,
+      notes: pNotes,
+    });
+    const c = clients.find((x) => x.id === payShop.clientId);
+    const typeLabel = pType === "rent" ? t("rentPayment") : pType === "sale" ? t("salePayment") : pType === "deposit" ? t("deposit") : t("other");
+    setReceipt({
+      receiptNo: payShop.id.slice(-6).toUpperCase() + "-" + Date.now().toString(36).slice(-4).toUpperCase(),
+      date: pDate,
+      clientName: c?.name ?? "—",
+      clientPhone: c?.phone,
+      title: `${typeLabel} — ${t("shop")} ${payShop.shopNo}`,
+      amount: pAmount,
+      lines: [
+        { label: t("building"), value: buildingName(payShop.buildingId) },
+        { label: t("shopNo"), value: payShop.shopNo },
+        ...(pType === "rent" && pPeriod ? [{ label: t("period"), value: pPeriod }] : []),
+      ],
       notes: pNotes,
     });
     toast.success(t("save"));
