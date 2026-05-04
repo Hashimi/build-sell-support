@@ -55,6 +55,28 @@ function SalesPage() {
   const [editing, setEditing] = useState<Sale | null>(null);
   const [form, setForm] = useState(empty);
   const [scheduleFor, setScheduleFor] = useState<Sale | null>(null);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
+
+  const buildReceipt = (sale: Sale, title: string, amount: number, extraLines: { label: string; value: string }[] = []): ReceiptData => {
+    const c = clients.find((x) => x.id === sale.clientId);
+    const a = apartments.find((x) => x.id === sale.apartmentId);
+    return {
+      receiptNo: sale.id.slice(-6).toUpperCase() + "-" + Date.now().toString(36).slice(-4).toUpperCase(),
+      date: new Date().toISOString().slice(0, 10),
+      clientName: c?.name ?? "—",
+      clientPhone: c?.phone,
+      title,
+      amount,
+      lines: [
+        { label: t("apartment"), value: a ? `${a.block}-${a.apartmentNo} (${t("floor")} ${a.floor})` : "—" },
+        { label: t("salePrice"), value: formatMoney(sale.salePrice) },
+        { label: t("paidAmount"), value: formatMoney(sale.paidAmount) },
+        { label: t("remaining"), value: formatMoney(Math.max(0, sale.salePrice - sale.paidAmount)) },
+        ...extraLines,
+      ],
+      notes: sale.notes,
+    };
+  };
 
   const start = (s?: Sale) => {
     if (s) {
