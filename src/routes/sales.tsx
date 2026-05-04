@@ -159,14 +159,14 @@ function SalesPage() {
           <F label={`${t("paidAmount")} (${paidPct}%)`}><Input type="number" value={form.paidAmount} onChange={(e) => setForm({ ...form, paidAmount: +e.target.value })} /></F>
         </div>
         <F label={t("installmentsCount")}>
-          <Select value={String(form.installmentsCount)} onValueChange={(v) => setForm({ ...form, installmentsCount: +v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {INSTALLMENT_OPTIONS.map((n) => (
-                <SelectItem key={n} value={String(n)}>{n === 0 ? t("noInstallments") : `${n} ${t("installments")}`}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            type="number"
+            min={0}
+            max={240}
+            value={form.installmentsCount}
+            onChange={(e) => setForm({ ...form, installmentsCount: Math.max(0, Math.floor(+e.target.value || 0)) })}
+            placeholder="0"
+          />
         </F>
         {form.installmentsCount > 0 && remaining > 0 && (
           <div className="rounded-md border bg-muted/30 p-3 text-sm">
