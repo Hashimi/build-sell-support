@@ -234,9 +234,26 @@ function SalesPage() {
                       <TableCell>{formatMoney(inst.amount)}</TableCell>
                       <TableCell>{inst.paid ? <Badge>{t("paid")}</Badge> : <Badge variant="secondary">{t("pending")}</Badge>}</TableCell>
                       <TableCell className="text-end">
-                        <Button size="sm" variant={inst.paid ? "outline" : "default"} onClick={() => togglePaid(scheduleFor, idx)}>
-                          {inst.paid ? t("pending") : t("markPaid")}
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          {inst.paid && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() =>
+                                setReceipt(
+                                  buildReceipt(scheduleFor, `${t("installmentNo")} ${inst.no}`, inst.amount, [
+                                    { label: t("dueDate"), value: inst.dueDate },
+                                  ]),
+                                )
+                              }
+                            >
+                              <Printer className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          <Button size="sm" variant={inst.paid ? "outline" : "default"} onClick={() => togglePaid(scheduleFor, idx)}>
+                            {inst.paid ? t("pending") : t("markPaid")}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -246,6 +263,8 @@ function SalesPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <PaymentReceiptDialog open={!!receipt} onOpenChange={(o) => !o && setReceipt(null)} data={receipt} />
 
       {items.length === 0 ? <EmptyState /> : (
         <Card className="overflow-hidden">
