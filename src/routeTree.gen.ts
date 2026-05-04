@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkersRouteImport } from './routes/workers'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SalesRouteImport } from './routes/sales'
 import { Route as SalariesRouteImport } from './routes/salaries'
 import { Route as RequestsRouteImport } from './routes/requests'
@@ -24,6 +25,11 @@ import { Route as IndexRouteImport } from './routes/index'
 const WorkersRoute = WorkersRouteImport.update({
   id: '/workers',
   path: '/workers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SalesRoute = SalesRouteImport.update({
@@ -88,6 +94,7 @@ export interface FileRoutesByFullPath {
   '/requests': typeof RequestsRoute
   '/salaries': typeof SalariesRoute
   '/sales': typeof SalesRoute
+  '/settings': typeof SettingsRoute
   '/workers': typeof WorkersRoute
 }
 export interface FileRoutesByTo {
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/requests': typeof RequestsRoute
   '/salaries': typeof SalariesRoute
   '/sales': typeof SalesRoute
+  '/settings': typeof SettingsRoute
   '/workers': typeof WorkersRoute
 }
 export interface FileRoutesById {
@@ -115,6 +123,7 @@ export interface FileRoutesById {
   '/requests': typeof RequestsRoute
   '/salaries': typeof SalariesRoute
   '/sales': typeof SalesRoute
+  '/settings': typeof SettingsRoute
   '/workers': typeof WorkersRoute
 }
 export interface FileRouteTypes {
@@ -130,6 +139,7 @@ export interface FileRouteTypes {
     | '/requests'
     | '/salaries'
     | '/sales'
+    | '/settings'
     | '/workers'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -143,6 +153,7 @@ export interface FileRouteTypes {
     | '/requests'
     | '/salaries'
     | '/sales'
+    | '/settings'
     | '/workers'
   id:
     | '__root__'
@@ -156,6 +167,7 @@ export interface FileRouteTypes {
     | '/requests'
     | '/salaries'
     | '/sales'
+    | '/settings'
     | '/workers'
   fileRoutesById: FileRoutesById
 }
@@ -170,6 +182,7 @@ export interface RootRouteChildren {
   RequestsRoute: typeof RequestsRoute
   SalariesRoute: typeof SalariesRoute
   SalesRoute: typeof SalesRoute
+  SettingsRoute: typeof SettingsRoute
   WorkersRoute: typeof WorkersRoute
 }
 
@@ -180,6 +193,13 @@ declare module '@tanstack/react-router' {
       path: '/workers'
       fullPath: '/workers'
       preLoaderRoute: typeof WorkersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sales': {
@@ -266,6 +286,7 @@ const rootRouteChildren: RootRouteChildren = {
   RequestsRoute: RequestsRoute,
   SalariesRoute: SalariesRoute,
   SalesRoute: SalesRoute,
+  SettingsRoute: SettingsRoute,
   WorkersRoute: WorkersRoute,
 }
 export const routeTree = rootRouteImport

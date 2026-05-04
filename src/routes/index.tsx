@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Package, HardHat, Building2, ShoppingCart, Wrench, Receipt, ArrowRight, ArrowLeft, CheckCircle2, Clock, Wallet } from "lucide-react";
+import { Package, HardHat, Building2, ShoppingCart, Wrench, Receipt, ArrowRight, ArrowLeft, CheckCircle2, Clock, Wallet, Store } from "lucide-react";
 import { useI18n } from "@/lib/i18n";
 import { useCollection } from "@/lib/storage";
 import { PageHeader } from "@/components/PageHeader";
@@ -18,6 +18,9 @@ function Dashboard() {
   const sales = useCollection("sales");
   const requests = useCollection("requests");
   const expenses = useCollection("expenses");
+  const shopPayments = useCollection("shopPayments");
+
+  const shopRevenue = shopPayments.reduce((s, p) => s + p.amount, 0);
 
   const totalSales = sales.reduce((s, x) => s + x.salePrice, 0);
   const paidFromSales = sales.reduce((s, x) => s + x.paidAmount, 0);
@@ -51,6 +54,7 @@ function Dashboard() {
     { icon: ShoppingCart, label: t("totalSales"), value: formatMoney(totalSales), to: "/sales", color: "from-chart-4/20 to-chart-4/5" },
     { icon: Wallet, label: t("paidFromSales"), value: formatMoney(paidFromSales), to: "/sales", color: "from-chart-2/20 to-chart-2/5" },
     { icon: Clock, label: t("pendingFromSales"), value: formatMoney(pendingFromSales), to: "/sales", color: "from-destructive/20 to-destructive/5" },
+    { icon: Store, label: t("shopRevenue"), value: formatMoney(shopRevenue), to: "/commercial", color: "from-chart-1/20 to-chart-1/5" },
     { icon: Wrench, label: t("openRequests"), value: openReqs.toString(), to: "/requests", color: "from-chart-5/20 to-chart-5/5" },
     { icon: Receipt, label: t("monthlyExpenses"), value: formatMoney(monthlyExp), to: "/expenses", color: "from-destructive/20 to-destructive/5" },
   ] as const;

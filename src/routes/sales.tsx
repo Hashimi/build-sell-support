@@ -14,6 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 import { repo, useCollection, type Sale, type InstallmentEntry } from "@/lib/storage";
+import { PaymentReceiptDialog, type ReceiptData } from "@/components/PaymentReceipt";
+import { Printer } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/sales")({ component: SalesPage });
@@ -28,7 +30,7 @@ const empty = {
   notes: "",
 };
 
-const INSTALLMENT_OPTIONS = [0, 3, 6, 12, 18, 24, 36, 48, 60];
+
 
 function buildSchedule(remaining: number, count: number, startDate: string): InstallmentEntry[] {
   if (count <= 0 || remaining <= 0) return [];
@@ -53,6 +55,28 @@ function SalesPage() {
   const [editing, setEditing] = useState<Sale | null>(null);
   const [form, setForm] = useState(empty);
   const [scheduleFor, setScheduleFor] = useState<Sale | null>(null);
+  const [receipt, setReceipt] = useState<ReceiptData | null>(null);
+
+  const buildReceipt = (sale: Sale, title: string, amount: number, extraLines: { label: string; value: string }[] = []): ReceiptData => {
+    const c = clients.find((x) => x.id === sale.clientId);
+    const a = apartments.find((x) => x.id === sale.apartmentId);
+    return {
+      receiptNo: sale.id.slice(-6).toUpperCase() + "-" + Date.now().toString(36).slice(-4).toUpperCase(),
+      date: new Date().toISOString().slice(0, 10),
+      clientName: c?.name ?? "—",
+      clientPhone: c?.phone,
+      title,
+      amount,
+      lines: [
+        { label: t("apartment"), value: a ? `${a.block}-${a.apartmentNo} (${t("floor")} ${a.floor})` : "—" },
+        { label: t("salePrice"), value: formatMoney(sale.salePrice) },
+        { label: t("paidAmount"), value: formatMoney(sale.paidAmount) },
+        { label: t("remaining"), value: formatMoney(Math.max(0, sale.salePrice - sale.paidAmount)) },
+        ...extraLines,
+      ],
+      notes: sale.notes,
+    };
+  };
 
   const start = (s?: Sale) => {
     if (s) {
@@ -92,16 +116,20 @@ function SalesPage() {
       }
       repo.update("sales", editing.id, payload);
     } else {
-      repo.add("sales", payload);
+      const created = repo.add("sales", payload);
       repo.update("apartments", form.apartmentId, {
         status: form.paidAmount >= form.salePrice ? "sold" : "reserved",
       });
+      if (form.paidAmount > 0) {
+        setReceipt(buildReceipt(created, t("upfrontPayment"), form.paidAmount));
+      }
     }
     toast.success(t("save"));
     return true;
   };
 
   const togglePaid = (sale: Sale, idx: number) => {
+    const wasPaid = (sale.installments ?? [])[idx]?.paid ?? false;
     const installments = (sale.installments ?? []).map((i, k) =>
       k === idx ? { ...i, paid: !i.paid, paidDate: !i.paid ? new Date().toISOString().slice(0, 10) : undefined } : i,
     );
@@ -112,7 +140,16 @@ function SalesPage() {
     if (newPaid >= sale.salePrice) {
       repo.update("apartments", sale.apartmentId, { status: "sold" });
     }
-    setScheduleFor({ ...sale, installments, paidAmount: newPaid });
+    const updated = { ...sale, installments, paidAmount: newPaid };
+    setScheduleFor(updated);
+    if (!wasPaid) {
+      const inst = installments[idx];
+      setReceipt(
+        buildReceipt(updated, `${t("installmentNo")} ${inst.no}`, inst.amount, [
+          { label: t("dueDate"), value: inst.dueDate },
+        ]),
+      );
+    }
   };
 
   const cName = (id: string) => clients.find((c) => c.id === id)?.name ?? "—";
@@ -157,14 +194,14 @@ function SalesPage() {
           <F label={`${t("paidAmount")} (${paidPct}%)`}><Input type="number" value={form.paidAmount} onChange={(e) => setForm({ ...form, paidAmount: +e.target.value })} /></F>
         </div>
         <F label={t("installmentsCount")}>
-          <Select value={String(form.installmentsCount)} onValueChange={(v) => setForm({ ...form, installmentsCount: +v })}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {INSTALLMENT_OPTIONS.map((n) => (
-                <SelectItem key={n} value={String(n)}>{n === 0 ? t("noInstallments") : `${n} ${t("installments")}`}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input
+            type="number"
+            min={0}
+            max={240}
+            value={form.installmentsCount}
+            onChange={(e) => setForm({ ...form, installmentsCount: Math.max(0, Math.floor(+e.target.value || 0)) })}
+            placeholder="0"
+          />
         </F>
         {form.installmentsCount > 0 && remaining > 0 && (
           <div className="rounded-md border bg-muted/30 p-3 text-sm">
@@ -197,9 +234,26 @@ function SalesPage() {
                       <TableCell>{formatMoney(inst.amount)}</TableCell>
                       <TableCell>{inst.paid ? <Badge>{t("paid")}</Badge> : <Badge variant="secondary">{t("pending")}</Badge>}</TableCell>
                       <TableCell className="text-end">
-                        <Button size="sm" variant={inst.paid ? "outline" : "default"} onClick={() => togglePaid(scheduleFor, idx)}>
-                          {inst.paid ? t("pending") : t("markPaid")}
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          {inst.paid && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() =>
+                                setReceipt(
+                                  buildReceipt(scheduleFor, `${t("installmentNo")} ${inst.no}`, inst.amount, [
+                                    { label: t("dueDate"), value: inst.dueDate },
+                                  ]),
+                                )
+                              }
+                            >
+                              <Printer className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
+                          <Button size="sm" variant={inst.paid ? "outline" : "default"} onClick={() => togglePaid(scheduleFor, idx)}>
+                            {inst.paid ? t("pending") : t("markPaid")}
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -209,6 +263,8 @@ function SalesPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      <PaymentReceiptDialog open={!!receipt} onOpenChange={(o) => !o && setReceipt(null)} data={receipt} />
 
       {items.length === 0 ? <EmptyState /> : (
         <Card className="overflow-hidden">
