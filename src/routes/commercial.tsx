@@ -283,6 +283,7 @@ function CommercialPage() {
                   <TableHead>{t("period")}</TableHead>
                   <TableHead>{t("amount")}</TableHead>
                   <TableHead>{t("notes")}</TableHead>
+                  <TableHead className="text-end">{t("actions")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -307,6 +308,32 @@ function CommercialPage() {
                         <TableCell>{p.period ?? "—"}</TableCell>
                         <TableCell className="font-semibold">{formatMoney(p.amount)}</TableCell>
                         <TableCell className="text-muted-foreground">{p.notes ?? ""}</TableCell>
+                        <TableCell className="text-end">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              const c = clients.find((x) => x.id === p.clientId);
+                              const typeLabel = p.type === "rent" ? t("rentPayment") : p.type === "sale" ? t("salePayment") : p.type === "deposit" ? t("deposit") : t("other");
+                              setReceipt({
+                                receiptNo: p.id.slice(-6).toUpperCase(),
+                                date: p.date,
+                                clientName: c?.name ?? "—",
+                                clientPhone: c?.phone,
+                                title: `${typeLabel} — ${t("shop")} ${sh?.shopNo ?? ""}`,
+                                amount: p.amount,
+                                lines: [
+                                  ...(sh ? [{ label: t("building"), value: buildingName(sh.buildingId) }] : []),
+                                  ...(sh ? [{ label: t("shopNo"), value: sh.shopNo }] : []),
+                                  ...(p.period ? [{ label: t("period"), value: p.period }] : []),
+                                ],
+                                notes: p.notes,
+                              });
+                            }}
+                          >
+                            <Receipt className="h-3.5 w-3.5" />
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -397,6 +424,8 @@ function CommercialPage() {
           </F>
         </div>
       </FormDialog>
+
+      <PaymentReceiptDialog open={!!receipt} onOpenChange={(o) => !o && setReceipt(null)} data={receipt} />
     </div>
   );
 }
