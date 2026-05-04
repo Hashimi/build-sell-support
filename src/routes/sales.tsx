@@ -14,6 +14,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useI18n } from "@/lib/i18n";
 import { repo, useCollection, type Sale, type InstallmentEntry } from "@/lib/storage";
+import { PaymentReceiptDialog, type ReceiptData } from "@/components/PaymentReceipt";
+import { Printer } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/sales")({ component: SalesPage });
@@ -28,7 +30,7 @@ const empty = {
   notes: "",
 };
 
-const INSTALLMENT_OPTIONS = [0, 3, 6, 12, 18, 24, 36, 48, 60];
+
 
 function buildSchedule(remaining: number, count: number, startDate: string): InstallmentEntry[] {
   if (count <= 0 || remaining <= 0) return [];
