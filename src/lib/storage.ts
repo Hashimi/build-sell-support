@@ -227,6 +227,58 @@ export const repo = {
   },
 };
 
+export interface CompanySettings {
+  name: string;
+  logoDataUrl?: string;
+  address?: string;
+  phone?: string;
+  phone2?: string;
+  email?: string;
+  website?: string;
+  registrationNo?: string;
+  footerNote?: string;
+}
+
+const SETTINGS_KEY = "cre.v1.companySettings";
+const settingsListeners = new Set<() => void>();
+
+export const defaultSettings: CompanySettings = {
+  name: "Your Company",
+  address: "",
+  phone: "",
+  email: "",
+};
+
+export function readSettings(): CompanySettings {
+  if (typeof window === "undefined") return defaultSettings;
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    return raw ? { ...defaultSettings, ...JSON.parse(raw) } : defaultSettings;
+  } catch {
+    return defaultSettings;
+  }
+}
+
+export function writeSettings(s: CompanySettings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  settingsListeners.forEach((fn) => fn());
+}
+
+export function useCompanySettings(): CompanySettings {
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => setHydrated(true), []);
+  const data = useSyncExternalStore(
+    (cb) => {
+      settingsListeners.add(cb);
+      return () => settingsListeners.delete(cb);
+    },
+    () => JSON.stringify(readSettings()),
+    () => JSON.stringify(defaultSettings),
+  );
+  if (!hydrated) return defaultSettings;
+  return JSON.parse(data) as CompanySettings;
+}
+
 export function useCollection<K extends StoreKey>(key: K): StoreMap[K][] {
   const [hydrated, setHydrated] = useState(false);
   useEffect(() => setHydrated(true), []);
