@@ -116,16 +116,20 @@ function SalesPage() {
       }
       repo.update("sales", editing.id, payload);
     } else {
-      repo.add("sales", payload);
+      const created = repo.add("sales", payload);
       repo.update("apartments", form.apartmentId, {
         status: form.paidAmount >= form.salePrice ? "sold" : "reserved",
       });
+      if (form.paidAmount > 0) {
+        setReceipt(buildReceipt(created, t("upfrontPayment"), form.paidAmount));
+      }
     }
     toast.success(t("save"));
     return true;
   };
 
   const togglePaid = (sale: Sale, idx: number) => {
+    const wasPaid = (sale.installments ?? [])[idx]?.paid ?? false;
     const installments = (sale.installments ?? []).map((i, k) =>
       k === idx ? { ...i, paid: !i.paid, paidDate: !i.paid ? new Date().toISOString().slice(0, 10) : undefined } : i,
     );
@@ -136,7 +140,16 @@ function SalesPage() {
     if (newPaid >= sale.salePrice) {
       repo.update("apartments", sale.apartmentId, { status: "sold" });
     }
-    setScheduleFor({ ...sale, installments, paidAmount: newPaid });
+    const updated = { ...sale, installments, paidAmount: newPaid };
+    setScheduleFor(updated);
+    if (!wasPaid) {
+      const inst = installments[idx];
+      setReceipt(
+        buildReceipt(updated, `${t("installmentNo")} ${inst.no}`, inst.amount, [
+          { label: t("dueDate"), value: inst.dueDate },
+        ]),
+      );
+    }
   };
 
   const cName = (id: string) => clients.find((c) => c.id === id)?.name ?? "—";
