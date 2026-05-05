@@ -34,50 +34,95 @@ export function PaymentReceiptDialog({
 
   if (!data) return null;
 
+  const esc = (s: unknown) =>
+    String(s ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+
+  const buildReceiptHtml = (copyLabel: string) => {
+    const contactLine = [company.phone, company.phone2, company.email, company.website]
+      .filter(Boolean)
+      .join(" · ");
+    const extraRows = (data.lines ?? [])
+      .map((l) => `<div class="r-row"><span class="l">${esc(l.label)}</span><span class="v">${esc(l.value)}</span></div>`)
+      .join("");
+    return `
+      <div class="receipt-copy">
+        <div class="r-head">
+          <div class="r-brand">
+            ${company.logoDataUrl ? `<img src="${esc(company.logoDataUrl)}" alt="logo" />` : ""}
+            <div>
+              <div class="r-title">${esc(company.name || "")}</div>
+              ${company.address ? `<div class="r-muted">${esc(company.address)}</div>` : ""}
+              ${contactLine ? `<div class="r-muted">${esc(contactLine)}</div>` : ""}
+              ${company.registrationNo ? `<div class="r-muted">${esc(t("registrationNo"))}: ${esc(company.registrationNo)}</div>` : ""}
+            </div>
+          </div>
+          <div class="r-meta">
+            <div class="r-muted" style="text-transform:uppercase;letter-spacing:.08em">${esc(t("receipt"))}</div>
+            <div style="font-family:ui-monospace,monospace;font-size:13px">#${esc(data.receiptNo)}</div>
+            <div class="r-muted">${esc(data.date)}</div>
+            <div class="r-tag">${esc(copyLabel)}</div>
+          </div>
+        </div>
+        <div class="r-grid">
+          <div class="r-row"><span class="l">${esc(t("client"))}</span><span class="v">${esc(data.clientName)}</span></div>
+          ${data.clientPhone ? `<div class="r-row"><span class="l">${esc(t("phone"))}</span><span class="v">${esc(data.clientPhone)}</span></div>` : ""}
+          <div class="r-row"><span class="l">${esc(t("paymentDetails"))}</span><span class="v">${esc(data.title)}</span></div>
+          <div class="r-row"><span class="l">${esc(t("date"))}</span><span class="v">${esc(data.date)}</span></div>
+          ${extraRows}
+        </div>
+        <div class="r-amount">
+          <span style="font-weight:600">${esc(t("amount"))}</span>
+          <span class="v">${esc(formatMoney(data.amount))}</span>
+        </div>
+        ${data.notes ? `<div class="r-muted" style="margin-bottom:10px"><b>${esc(t("notes"))}:</b> ${esc(data.notes)}</div>` : ""}
+        <div class="r-sigs">
+          <div class="r-sig">${esc(t("customerSignature"))}</div>
+          <div class="r-sig">${esc(t("authorizedSignature"))}</div>
+        </div>
+        ${company.footerNote ? `<div class="r-foot" style="border-top:1px solid #eee;margin-top:10px;padding-top:6px">${esc(company.footerNote)}</div>` : ""}
+        <div class="r-foot">${esc(t("thankYou"))}</div>
+      </div>`;
+  };
+
   const handlePrint = () => {
-    const node = document.getElementById("receipt-print-area");
-    if (!node) {
-      window.print();
-      return;
-    }
     const w = window.open("", "_blank", "width=900,height=1000");
     if (!w) {
       window.print();
       return;
     }
-    // Copy stylesheets from current document so design tokens / tailwind apply
-    const styleTags = Array.from(document.querySelectorAll('link[rel="stylesheet"], style'))
-      .map((el) => el.outerHTML)
-      .join("\n");
-    w.document.open();
-    w.document.write(`<!doctype html><html dir="${dir}"><head><meta charset="utf-8"><base href="${window.location.origin}/"><title>${t("receipt")} #${data.receiptNo}</title>${styleTags}
+    const html = `<!doctype html><html dir="${dir}"><head><meta charset="utf-8"><title>${esc(t("receipt"))} #${esc(data.receiptNo)}</title>
 <style>
-  body { margin: 0; padding: 16px; background: #fff; color: #111; font-family: system-ui, -apple-system, "Vazirmatn", sans-serif; }
-  .receipt-copy { border: 1px solid #ddd; border-radius: 8px; padding: 18px; margin-bottom: 18px; page-break-inside: avoid; break-inside: avoid; }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; background: #fff; color: #111; font-family: system-ui, -apple-system, "Vazirmatn", "Segoe UI", sans-serif; }
+  .receipt-copy { border: 1px solid #ddd; border-radius: 8px; padding: 18px; margin-bottom: 18px; page-break-inside: avoid; break-inside: avoid; color:#111; background:#fff; }
   .r-head { display:flex; justify-content:space-between; gap:16px; border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px; }
   .r-brand { display:flex; gap:10px; align-items:center; }
   .r-brand img { height:56px; width:56px; object-fit:contain; }
-  .r-title { font-size:18px; font-weight:700; }
+  .r-title { font-size:18px; font-weight:700; color:#111; }
   .r-muted { font-size:11px; color:#666; }
-  .r-meta { text-align:end; }
-  .r-tag { display:inline-block; border:1px solid #ccc; border-radius:4px; padding:1px 6px; font-size:10px; font-weight:600; margin-top:4px; }
+  .r-meta { text-align:${dir === "rtl" ? "left" : "right"}; }
+  .r-tag { display:inline-block; border:1px solid #ccc; border-radius:4px; padding:1px 6px; font-size:10px; font-weight:600; margin-top:4px; color:#333; }
   .r-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; font-size: 13px; margin-bottom: 12px; }
   .r-row { display:flex; justify-content:space-between; gap:12px; border-bottom:1px dashed #eee; padding:4px 0; }
-  .r-row .l { color:#666; } .r-row .v { font-weight:500; text-align:end; }
+  .r-row .l { color:#666; } .r-row .v { font-weight:500; text-align:${dir === "rtl" ? "left" : "right"}; color:#111; }
   .r-amount { display:flex; justify-content:space-between; align-items:center; background:#eef6f1; border:1px solid #cfe3d8; border-radius:8px; padding:10px 12px; margin-bottom:12px; }
   .r-amount .v { font-size:22px; font-weight:700; color:#1a7a55; }
   .r-sigs { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:28px; }
   .r-sig { border-top:1px solid #444; padding-top:4px; text-align:center; font-size:11px; color:#666; }
-  .r-foot { text-align:center; font-size:10px; color:#666; margin-top:10px; }
+  .r-foot { text-align:center; font-size:10px; color:#666; margin-top:6px; }
   @page { margin: 12mm; }
-</style>
-</head><body>${node.innerHTML}</body></html>`);
+</style></head><body>${buildReceiptHtml(t("customerCopy"))}${buildReceiptHtml(t("companyCopy"))}</body></html>`;
+    w.document.open();
+    w.document.write(html);
     w.document.close();
-    // Wait for images then print
-    const doPrint = () => { w.focus(); w.print(); setTimeout(() => w.close(), 300); };
+    const doPrint = () => { try { w.focus(); w.print(); } catch {} setTimeout(() => { try { w.close(); } catch {} }, 400); };
     const imgs = Array.from(w.document.images);
     if (imgs.length === 0) {
-      setTimeout(doPrint, 150);
+      setTimeout(doPrint, 200);
     } else {
       let pending = imgs.length;
       const done = () => { if (--pending <= 0) doPrint(); };
@@ -85,7 +130,7 @@ export function PaymentReceiptDialog({
         if (img.complete) done();
         else { img.onload = done; img.onerror = done; }
       });
-      setTimeout(doPrint, 1500); // fallback
+      setTimeout(doPrint, 1500);
     }
   };
 
