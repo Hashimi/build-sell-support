@@ -26,9 +26,11 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useI18n } from "@/lib/i18n";
+import { useCompanySettings } from "@/lib/storage";
 
 export function AppSidebar() {
   const { t, dir } = useI18n();
+  const company = useCompanySettings();
   const pathname = useRouterState({ select: (r) => r.location.pathname });
 
   const groups = [
@@ -69,12 +71,16 @@ export function AppSidebar() {
     <Sidebar collapsible="icon" side={dir === "rtl" ? "right" : "left"}>
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-3 px-2 py-3">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary shadow-elegant">
-            <Hammer className="h-5 w-5 text-primary-foreground" />
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg gradient-primary shadow-elegant overflow-hidden">
+            {company.logoDataUrl ? (
+              <img src={company.logoDataUrl} alt="logo" className="h-full w-full object-cover" />
+            ) : (
+              <Hammer className="h-5 w-5 text-primary-foreground" />
+            )}
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
-            <span className="text-sm font-bold text-sidebar-foreground leading-tight">
-              {t("appName")}
+            <span className="text-sm font-bold text-sidebar-foreground leading-tight truncate max-w-[160px]">
+              {company.name || t("appName")}
             </span>
             <span className="text-xs text-sidebar-foreground/60">
               <Home className="inline h-3 w-3 me-1" />
