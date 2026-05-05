@@ -50,7 +50,7 @@ export function PaymentReceiptDialog({
       .map((el) => el.outerHTML)
       .join("\n");
     w.document.open();
-    w.document.write(`<!doctype html><html dir="${dir}"><head><meta charset="utf-8"><title>${t("receipt")} #${data.receiptNo}</title>${styleTags}
+    w.document.write(`<!doctype html><html dir="${dir}"><head><meta charset="utf-8"><base href="${window.location.origin}/"><title>${t("receipt")} #${data.receiptNo}</title>${styleTags}
 <style>
   body { margin: 0; padding: 16px; background: #fff; color: #111; font-family: system-ui, -apple-system, "Vazirmatn", sans-serif; }
   .receipt-copy { border: 1px solid #ddd; border-radius: 8px; padding: 18px; margin-bottom: 18px; page-break-inside: avoid; break-inside: avoid; }
