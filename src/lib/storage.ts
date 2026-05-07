@@ -191,6 +191,19 @@ function write<K extends StoreKey>(key: K, items: StoreMap[K][]) {
   emit(key);
 }
 
+// Backend sync hooks (wired up by src/lib/sync.ts when XAMPP API is detected).
+type SyncHooks = {
+  upsert?: (collection: string, item: any) => void;
+  remove?: (collection: string, id: string) => void;
+  saveSettings?: (s: any) => void;
+};
+const syncHooks: SyncHooks = {};
+export function installSyncHooks(h: SyncHooks) { Object.assign(syncHooks, h); }
+export function hydrateCollection<K extends StoreKey>(key: K, items: StoreMap[K][]) {
+  localStorage.setItem(PREFIX + key, JSON.stringify(items));
+  emit(key);
+}
+
 export function uid() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
