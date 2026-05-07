@@ -279,6 +279,11 @@ export function readSettings(): CompanySettings {
 export function writeSettings(s: CompanySettings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
   settingsListeners.forEach((fn) => fn());
+  syncHooks.saveSettings?.(s);
+}
+export function hydrateSettings(s: CompanySettings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  settingsListeners.forEach((fn) => fn());
 }
 
 export function useCompanySettings(): CompanySettings {
