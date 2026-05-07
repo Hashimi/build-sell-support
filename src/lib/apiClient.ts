@@ -9,8 +9,7 @@ const BASE = (() => {
   if (typeof window !== "undefined" && (window as any).__API_BASE__) {
     return (window as any).__API_BASE__ as string;
   }
-  // @ts-expect-error vite env
-  const envBase = import.meta.env?.VITE_API_BASE as string | undefined;
+  const envBase = (import.meta as any).env?.VITE_API_BASE as string | undefined;
   if (envBase) return envBase.replace(/\/$/, "");
   if (typeof window === "undefined") return "/api";
   const path = window.location.pathname.replace(/\/[^/]*$/, "/");
