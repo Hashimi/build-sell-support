@@ -1,9 +1,18 @@
 // Thin client for the PHP/MySQL backend that ships with the XAMPP build.
 // In dev (no /api), all calls fail silently and the app keeps using localStorage.
 
+// API base resolution:
+//   1. window.__API_BASE__   (set in index.html for static deploys)
+//   2. import.meta.env.VITE_API_BASE  (set in .env.local for dev)
+//   3. same-origin /api      (when SPA is served from XAMPP)
 const BASE = (() => {
+  if (typeof window !== "undefined" && (window as any).__API_BASE__) {
+    return (window as any).__API_BASE__ as string;
+  }
+  // @ts-expect-error vite env
+  const envBase = import.meta.env?.VITE_API_BASE as string | undefined;
+  if (envBase) return envBase.replace(/\/$/, "");
   if (typeof window === "undefined") return "/api";
-  // Same-origin: <site>/realestate/  →  <site>/realestate/api
   const path = window.location.pathname.replace(/\/[^/]*$/, "/");
   return path + "api";
 })();
