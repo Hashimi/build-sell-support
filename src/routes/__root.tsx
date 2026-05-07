@@ -5,6 +5,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { AppHeader } from "@/components/AppHeader";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthGate } from "@/components/AuthGate";
 
 function NotFoundComponent() {
   return (
@@ -67,16 +68,18 @@ function RootShell({ children }: { children: React.ReactNode }) {
 function RootComponent() {
   return (
     <I18nProvider>
-      <SidebarProvider>
-        <AppSidebar />
-        <SidebarInset>
-          <AppHeader />
-          <main className="flex-1 p-4 md:p-6 lg:p-8">
-            <Outlet />
-          </main>
-        </SidebarInset>
-        <Toaster richColors position="top-center" />
-      </SidebarProvider>
+      <AuthGate>
+        <SidebarProvider>
+          <AppSidebar />
+          <SidebarInset>
+            <AppHeader />
+            <main className="flex-1 p-4 md:p-6 lg:p-8">
+              <Outlet />
+            </main>
+          </SidebarInset>
+          <Toaster richColors position="top-center" />
+        </SidebarProvider>
+      </AuthGate>
     </I18nProvider>
   );
 }

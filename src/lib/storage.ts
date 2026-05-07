@@ -191,6 +191,19 @@ function write<K extends StoreKey>(key: K, items: StoreMap[K][]) {
   emit(key);
 }
 
+// Backend sync hooks (wired up by src/lib/sync.ts when XAMPP API is detected).
+type SyncHooks = {
+  upsert?: (collection: string, item: any) => void;
+  remove?: (collection: string, id: string) => void;
+  saveSettings?: (s: any) => void;
+};
+const syncHooks: SyncHooks = {};
+export function installSyncHooks(h: SyncHooks) { Object.assign(syncHooks, h); }
+export function hydrateCollection<K extends StoreKey>(key: K, items: StoreMap[K][]) {
+  localStorage.setItem(PREFIX + key, JSON.stringify(items));
+  emit(key);
+}
+
 export function uid() {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
@@ -206,6 +219,7 @@ export const repo = {
     const now = new Date().toISOString();
     const item = { ...(data as object), id: uid(), createdAt: now, updatedAt: now } as StoreMap[K];
     write(key, [item, ...read(key)]);
+    syncHooks.upsert?.(key, item);
     return item;
   },
   update<K extends StoreKey>(key: K, id: string, patch: Partial<StoreMap[K]>) {
@@ -213,12 +227,15 @@ export const repo = {
       x.id === id ? ({ ...x, ...patch, updatedAt: new Date().toISOString() } as StoreMap[K]) : x,
     );
     write(key, items);
+    const updated = items.find((x: any) => x.id === id);
+    if (updated) syncHooks.upsert?.(key, updated);
   },
   remove<K extends StoreKey>(key: K, id: string) {
     write(
       key,
       read(key).filter((x) => x.id !== id),
     );
+    syncHooks.remove?.(key, id);
   },
   subscribe(key: StoreKey, fn: () => void) {
     if (!listeners.has(key)) listeners.set(key, new Set());
@@ -260,6 +277,11 @@ export function readSettings(): CompanySettings {
 }
 
 export function writeSettings(s: CompanySettings) {
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+  settingsListeners.forEach((fn) => fn());
+  syncHooks.saveSettings?.(s);
+}
+export function hydrateSettings(s: CompanySettings) {
   localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
   settingsListeners.forEach((fn) => fn());
 }
