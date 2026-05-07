@@ -219,6 +219,7 @@ export const repo = {
     const now = new Date().toISOString();
     const item = { ...(data as object), id: uid(), createdAt: now, updatedAt: now } as StoreMap[K];
     write(key, [item, ...read(key)]);
+    syncHooks.upsert?.(key, item);
     return item;
   },
   update<K extends StoreKey>(key: K, id: string, patch: Partial<StoreMap[K]>) {
@@ -226,12 +227,15 @@ export const repo = {
       x.id === id ? ({ ...x, ...patch, updatedAt: new Date().toISOString() } as StoreMap[K]) : x,
     );
     write(key, items);
+    const updated = items.find((x: any) => x.id === id);
+    if (updated) syncHooks.upsert?.(key, updated);
   },
   remove<K extends StoreKey>(key: K, id: string) {
     write(
       key,
       read(key).filter((x) => x.id !== id),
     );
+    syncHooks.remove?.(key, id);
   },
   subscribe(key: StoreKey, fn: () => void) {
     if (!listeners.has(key)) listeners.set(key, new Set());
